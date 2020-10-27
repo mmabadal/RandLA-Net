@@ -75,7 +75,7 @@ class ModelTester:
                        model.inputs['cloud_inds'],
                        )
 
-                stacked_probs, stacked_labels, point_idx, cloud_idx = self.sess.run(ops, {model.is_training: False})
+                stacked_probs, stacked_labels, point_idx, cloud_idx = self.sess.run(ops, {model.is_training: False})  # SACA PROBS
                 correct = np.sum(np.argmax(stacked_probs, axis=1) == stacked_labels)
                 acc = correct / float(np.prod(np.shape(stacked_labels)))
                 print('step' + str(step_id) + ' acc:' + str(acc))
@@ -86,7 +86,7 @@ class ModelTester:
                     probs = stacked_probs[j, :, :]
                     p_idx = point_idx[j, :]
                     c_i = cloud_idx[j][0]
-                    self.test_probs[c_i][p_idx] = test_smooth * self.test_probs[c_i][p_idx] + (1 - test_smooth) * probs
+                    self.test_probs[c_i][p_idx] = test_smooth * self.test_probs[c_i][p_idx] + (1 - test_smooth) * probs # GUARDA PROBS SMOOTHED
                 step_id += 1
 
             except tf.errors.OutOfRangeError:
@@ -106,8 +106,8 @@ class ModelTester:
                     num_val = len(dataset.input_labels['validation'])
 
                     for i_test in range(num_val):
-                        probs = self.test_probs[i_test]
-                        preds = dataset.label_values[np.argmax(probs, axis=1)].astype(np.int32)
+                        probs = self.test_probs[i_test]                                                         # RECUPERA PROBS
+                        preds = dataset.label_values[np.argmax(probs, axis=1)].astype(np.int32)                 # RECUPERA LAS PREDS
                         labels = dataset.input_labels['validation'][i_test]
 
                         # Confs
@@ -135,7 +135,7 @@ class ModelTester:
 
                         for i_val in range(num_val):
                             # Reproject probs back to the evaluations points
-                            proj_idx = dataset.val_proj[i_val]
+                            proj_idx = dataset.val_proj[i_val]                                                   # SE PUEDE QUITAR LA PARTE DE ARRIBE Y SACAR LAS PRED DIRECTAMENTE ASI
                             probs = self.test_probs[i_val][proj_idx, :]
                             proj_probs_list += [probs]
 
