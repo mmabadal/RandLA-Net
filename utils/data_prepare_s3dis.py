@@ -25,20 +25,24 @@ path_in = parsed_args.path_in
 path_out = parsed_args.path_out
 path_cls = parsed_args.path_cls
 
+path_out_sub = path_out + "_sub"
+
 if not os.path.exists(path_out):
     os.mkdir(path_out)
+
+if not os.path.exists(path_out_sub):
+os.mkdir(path_out)
 
 gt_class = path_cls
 gt_class2label = {cls: i for i, cls in enumerate(gt_class)}
 
 sub_grid_size = 0.04
 
-def convert_pc2ply(case_path, save_path):
+def convert_pc2ply(case_path):
     """
     Convert original dataset files to ply file (each line is XYZRGBL).
     We aggregated all the points from each instance in the room.
     :param case_path: path to case. e.g. Area_1/office_2/
-    :param save_path: path to save original point clouds (each line is XYZRGBL)
     :return: None
     """
     data_list = []
@@ -60,22 +64,23 @@ def convert_pc2ply(case_path, save_path):
     xyz = pc_label[:, :3].astype(np.float32)
     colors = pc_label[:, 3:6].astype(np.uint8)
     labels = pc_label[:, 6].astype(np.uint8)
-    write_ply(save_path, (xyz, colors, labels), ['x', 'y', 'z', 'red', 'green', 'blue', 'class'])
+    ply_file = os.path.join(path_out, folder + ".ply" )
+    write_ply(ply_file, (xyz, colors, labels), ['x', 'y', 'z', 'red', 'green', 'blue', 'class'])
 
     # save sub_cloud and KDTree file
     sub_xyz, sub_colors, sub_labels = DP.grid_sub_sampling(xyz, colors, labels, sub_grid_size)
     sub_colors = sub_colors / 255.0
-    sub_ply_file = os.path.join(path_out, folder + ".ply" )
+    sub_ply_file = os.path.join(path_out_sub, folder + ".ply" )
     write_ply(sub_ply_file, [sub_xyz, sub_colors, sub_labels], ['x', 'y', 'z', 'red', 'green', 'blue', 'class'])
 
     search_tree = KDTree(sub_xyz)
-    kd_tree_file = os.path.join(path_out, folder + "_KDTree.pkl" )
+    kd_tree_file = os.path.join(path_out_sub, folder + "_KDTree.pkl" )
     with open(kd_tree_file, 'wb') as f:
         pickle.dump(search_tree, f)
 
     proj_idx = np.squeeze(search_tree.query(xyz, return_distance=False))
     proj_idx = proj_idx.astype(np.int32)
-    proj_save = os.path.join(path_out, folder + "_proj.pkl" )
+    proj_save = os.path.join(path_out_sub, folder + "_proj.pkl" )
     with open(proj_save, 'wb') as f:
         pickle.dump([proj_idx, labels], f)
 
@@ -83,4 +88,4 @@ def convert_pc2ply(case_path, save_path):
 if __name__ == '__main__':
     for folder in natsorted(os.listdir(path_in)):
         print("working on case: " + str(folder))
-        convert_pc2ply(folder, path_out)
+        convert_pc2ply(folder)
