@@ -53,6 +53,7 @@ def convert_pc2ply(case_path):
         class_name = os.path.basename(f).split('_')[0]
         if class_name not in gt_class:  # note: in some room there is 'staris' class..
             print("ERROR, " + str(class_name) + " CLASE NAME NOT RECOGNIZED")
+            break
         pc = pd.read_csv(f, header=None, delim_whitespace=True).values
         labels = np.ones((pc.shape[0], 1)) * gt_class2label[class_name]
         data_list.append(np.concatenate([pc, labels], 1))  # Nx7
