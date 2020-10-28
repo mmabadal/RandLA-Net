@@ -32,8 +32,9 @@ class DATA:
         self.label_to_idx = {l: i for i, l in enumerate(self.label_values)}
         self.ignored_labels = np.array([])
 
-        #self.val_split = 'Area_' + str(test_area_idx)
-        #self.all_files = glob.glob(join(self.path, 'original_ply', '*.ply'))
+        #self.val_split = 'Area_' + str(test_area_idx)               # DELETE CUANDO ARREGLE LO DE SPLIT TRAIN VAL
+        self.original = os.path.join(data_path, "original")
+        self.sub_folder = os.path.join(data_path, "sub")
 
         # Initiate containers
         self.val_proj = []
@@ -48,10 +49,10 @@ class DATA:
 
     def load_sub_sampled_clouds(self, sub_grid_size):
         
-        for i, file_path in enumerate(self.all_files):
+        for cloud in os.listdir(original_folder):
             t0 = time.time()
-            cloud_name = file_path.split('/')[-1][:-4]
-            if self.val_split in cloud_name:
+            cloud_name = cloud[:-4]
+            if self.val_split in cloud_name:                        # ELEGIR COMO HAGO SPLIT TRAIN VAL!!!!!!! SOLO EN ORIGINAL ES NECESARIO CREO
                 cloud_split = 'validation'
             else:
                 cloud_split = 'training'
@@ -79,9 +80,9 @@ class DATA:
         print('\nPreparing reprojected indices for testing')
 
         # Get validation and test reprojected indices
-        for i, file_path in enumerate(self.all_files):
+        for cloud in os.listdir(original_folder):
             t0 = time.time()
-            cloud_name = file_path.split('/')[-1][:-4]
+            cloud_name = cloud[:-4]
 
             # Validation projection and labels
             if self.val_split in cloud_name:
