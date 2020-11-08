@@ -28,14 +28,16 @@ path_cls = parsed_args.path_cls
 path_orig = os.path.join(path_out,"original")
 path_out_sub = os.path.join(path_out,"sub")
 
+if not os.path.exists(path_out):
+    os.mkdir(path_out)
+
 if not os.path.exists(path_orig):
     os.mkdir(path_orig)
 
 if not os.path.exists(path_out_sub):
     os.mkdir(path_out_sub)
 
-gt_class = path_cls
-gt_class2label = {cls: i for i, cls in enumerate(gt_class)}
+classes, c_labels, label2color, label2names = DP.get_info_classes(path_cls)
 
 sub_grid_size = 0.04
 
@@ -48,15 +50,17 @@ def convert_pc2ply(case):
     """
     data_list = []
 
-    anno_path = os.path.join(path_in, case, "annotations")
+    anno_path = os.path.join(path_in, case, "Annotations")
+    print(anno_path)
 
     for f in glob.glob(join(anno_path, '*.txt')):
+        print("oliiiiiiiiii")
         class_name = os.path.basename(f).split('_')[0]
-        if class_name not in gt_class: 
+        if class_name not in classes: 
             print("ERROR, " + str(class_name) + " CLASE NAME NOT RECOGNIZED")
             break
         pc = pd.read_csv(f, header=None, delim_whitespace=True).values                # TODO LEER DESDE PLY?
-        labels = np.ones((pc.shape[0], 1)) * gt_class2label[class_name]
+        labels = np.ones((pc.shape[0], 1)) * c_labels[class_name]
         data_list.append(np.concatenate([pc, labels], 1))  # Nx7
 
     pc_label = np.concatenate(data_list, 0)
