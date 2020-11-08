@@ -114,7 +114,7 @@ class DataProcessing:
         label2color = {classes.index(cls): colors[classes.index(cls)] for cls in classes}
         label2names = {classes.index(cls): cls for cls in classes}
 
-        return classes, labels, label2color, label2names
+        return classes, class2labels, label2color, label2names
 
     @staticmethod
     def load_pc_semantic3d(filename):

@@ -37,7 +37,7 @@ if not os.path.exists(path_orig):
 if not os.path.exists(path_out_sub):
     os.mkdir(path_out_sub)
 
-classes, c_labels, label2color, label2names = DP.get_info_classes(path_cls)
+classes, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
 
 sub_grid_size = 0.04
 
@@ -58,7 +58,7 @@ def convert_pc2ply(case):
             print("ERROR, " + str(class_name) + " CLASE NAME NOT RECOGNIZED")
             break
         pc = pd.read_csv(f, header=None, delim_whitespace=True).values                # TODO LEER DESDE PLY?
-        labels = np.ones((pc.shape[0], 1)) * c_labels[class_name]
+        labels = np.ones((pc.shape[0], 1)) * class2labels[class_name]
         data_list.append(np.concatenate([pc, labels], 1))  # Nx7
 
     pc_label = np.concatenate(data_list, 0)
