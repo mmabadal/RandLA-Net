@@ -51,10 +51,8 @@ def convert_pc2ply(case):
     data_list = []
 
     anno_path = os.path.join(path_in, case, "Annotations")
-    print(anno_path)
 
     for f in glob.glob(join(anno_path, '*.txt')):
-        print("oliiiiiiiiii")
         class_name = os.path.basename(f).split('_')[0]
         if class_name not in classes: 
             print("ERROR, " + str(class_name) + " CLASE NAME NOT RECOGNIZED")
