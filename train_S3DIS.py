@@ -14,23 +14,6 @@ class DATA:
     def __init__(self, data_path):
         self.name = 'DATA'
         self.path = data_path
-        self.label_to_names = {0: 'ceiling',
-                               1: 'floor',
-                               2: 'wall',
-                               3: 'beam',
-                               4: 'column',
-                               5: 'window',
-                               6: 'door',
-                               7: 'table',
-                               8: 'chair',
-                               9: 'sofa',
-                               10: 'bookcase',
-                               11: 'board',
-                               12: 'clutter'}
-        self.num_classes = len(self.label_to_names)
-        self.label_values = np.sort([k for k, v in self.label_to_names.items()])
-        self.label_to_idx = {l: i for i, l in enumerate(self.label_values)}
-        self.ignored_labels = np.array([])
 
         #self.val_split = 'Area_' + str(test_area_idx)               # TODO DELETE CUANDO ARREGLE LO DE SPLIT TRAIN VAL
         self.original = os.path.join(data_path, "original")
@@ -196,7 +179,6 @@ class DATA:
 
     def init_input_pipeline(self):
         print('Initiating input pipelines')
-        cfg.ignored_label_inds = [self.label_to_idx[ign_label] for ign_label in self.ignored_labels]
         gen_function, gen_types, gen_shapes = self.get_batch_gen('training')
         gen_function_val, _, _ = self.get_batch_gen('validation')
         self.train_data = tf.data.Dataset.from_generator(gen_function, gen_types, gen_shapes)
