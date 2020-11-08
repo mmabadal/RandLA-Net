@@ -85,7 +85,7 @@ class DATA:
             cloud_name = cloud[:-4]
 
             # Validation projection and labels
-            if self.val_split in cloud_name:
+            if self.val_split in cloud_name:                                    # ELEGIR COMO HAGO SPLIT TRAIN VAL!!!!!!! SOLO EN ORIGINAL ES NECESARIO CREO
                 proj_file = join(self.path, '{:s}_proj.pkl'.format(cloud_name))
                 with open(proj_file, 'rb') as f:
                     proj_idx, labels = pickle.load(f)
