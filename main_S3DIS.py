@@ -32,7 +32,7 @@ class DATA:
         self.label_to_idx = {l: i for i, l in enumerate(self.label_values)}
         self.ignored_labels = np.array([])
 
-        #self.val_split = 'Area_' + str(test_area_idx)               # DELETE CUANDO ARREGLE LO DE SPLIT TRAIN VAL
+        #self.val_split = 'Area_' + str(test_area_idx)               # TODO DELETE CUANDO ARREGLE LO DE SPLIT TRAIN VAL
         self.original = os.path.join(data_path, "original")
         self.sub_folder = os.path.join(data_path, "sub")
 
@@ -52,7 +52,7 @@ class DATA:
         for cloud in os.listdir(original_folder):
             t0 = time.time()
             cloud_name = cloud[:-4]
-            if self.val_split in cloud_name:                        # ELEGIR COMO HAGO SPLIT TRAIN VAL!!!!!!! SOLO EN ORIGINAL ES NECESARIO CREO
+            if self.val_split in cloud_name:                        # TODO ELEGIR COMO HAGO SPLIT TRAIN VAL!!!!!!! SOLO EN ORIGINAL ES NECESARIO CREO
                 cloud_split = 'validation'
             else:
                 cloud_split = 'training'
@@ -85,7 +85,7 @@ class DATA:
             cloud_name = cloud[:-4]
 
             # Validation projection and labels
-            if self.val_split in cloud_name:                                    # ELEGIR COMO HAGO SPLIT TRAIN VAL!!!!!!! SOLO EN ORIGINAL ES NECESARIO CREO
+            if self.val_split in cloud_name:                                    # TODO ELEGIR COMO HAGO SPLIT TRAIN VAL!!!!!!! SOLO EN ORIGINAL ES NECESARIO CREO
                 proj_file = join(self.path, '{:s}_proj.pkl'.format(cloud_name))
                 with open(proj_file, 'rb') as f:
                     proj_idx, labels = pickle.load(f)
