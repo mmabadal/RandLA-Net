@@ -27,14 +27,28 @@ git clone --depth=1 https://github.com/QingyongHu/RandLA-Net && cd RandLA-Net
 conda create -n randlanet python=3.5
 source activate randlanet
 pip install -r helper_requirements.txt
+pip install tensorflow-gpu==1.11
 sh compile_op.sh
 ```
 
-**Update 03/21/2020, pre-trained models and results are available now.** 
-You can download the pre-trained models and results [here](https://drive.google.com/open?id=1iU8yviO3TP87-IexBXsu13g6NklwEkXB).
-Note that, please specify the model path in the main function (e.g., `main_S3DIS.py`) if you want to use the pre-trained model and have a quick try of our RandLA-Net.
+### (2) Troubleshooting
 
-### (2) S3DIS
+Ubuntu 16.04
+Nvidia drivers: 384.130
+CUDA: 9.0.176
+CUDNN: 7.4.1
+CONDA -> python:3.5
+TENSORFLOW: pip installation inside CONDA (pip install tensorflow-gpu==1.11)
+
+data path changed in data_prepare_s3dis.py and main_S3DIS.py
+
+Reduced GPU memory usage: batch_size=3, numpoints=xxxx
+
+
+
+
+
+### (3) Segmentation
 S3DIS dataset can be found 
 <a href="https://docs.google.com/forms/d/e/1FAIpQLScDimvNMCGhy_rmBA2gHfDu3naktRm6A8BPwAWWDv-Uhm6Shw/viewform?c=0&w=1">here</a>. 
 Download the files named "Stanford3dDataset_v1.2_Aligned_Version.zip". Uncompress the folder and move it to 
@@ -44,95 +58,15 @@ Download the files named "Stanford3dDataset_v1.2_Aligned_Version.zip". Uncompres
 ```
 python utils/data_prepare_s3dis.py
 ```
-- Start 6-fold cross validation:
+- Train:
 ```
-sh jobs_6_fold_cv_s3dis.sh
+python -B main_S3DIS.py --gpu 0 --mode train --test_area 1
 ```
-- Move all the generated results (*.ply) in `/test` folder to `/data/S3DIS/results`, calculate the final mean IoU results:
+- Test:
 ```
-python utils/6_fold_cv.py
-```
-
-Quantitative results of different approaches on S3DIS dataset (6-fold cross-validation):
-
-![a](http://randla-net.cs.ox.ac.uk/imgs/S3DIS_table.png)
-
-Qualitative results of our RandLA-Net:
-
-| ![2](http://randla-net.cs.ox.ac.uk/imgs/S3DIS_area2.gif)   | ![z](http://randla-net.cs.ox.ac.uk/imgs/S3DIS_area3.gif) |
-| ------------------------------ | ---------------------------- |
-
-
-
-### (3) Semantic3D
-7zip is required to uncompress the raw data in this dataset, to install p7zip:
-```
-sudo apt-get install p7zip-full
-```
-- Download and extract the dataset. First, please specify the path of the dataset by changing the `BASE_DIR` in "download_semantic3d.sh"    
-```
-sh utils/download_semantic3d.sh
-```
-- Preparing the dataset:
-```
-python utils/data_prepare_semantic3d.py
-```
-- Start training:
-```
-python main_Semantic3D.py --mode train --gpu 0
-```
-- Evaluation:
-```
-python main_Semantic3D.py --mode test --gpu 0
-```
-Quantitative results of different approaches on Semantic3D (reduced-8):
-
-![a](http://randla-net.cs.ox.ac.uk/imgs/Semantic3D_table.png)
-
-Qualitative results of our RandLA-Net:
-
-| ![z](http://randla-net.cs.ox.ac.uk/imgs/Semantic3D-1.gif)    | ![z](http://randla-net.cs.ox.ac.uk/imgs/Semantic3D-2.gif)   |
-| -------------------------------- | ------------------------------- |
-
-
-
-**Note:** 
-- Preferably with more than 64G RAM to process this dataset due to the large volume of point cloud
-
-
-### (4) SemanticKITTI
-
-SemanticKITTI dataset can be found <a href="http://semantic-kitti.org/dataset.html#download">here</a>. Download the files
- related to semantic segmentation and extract everything into the same folder. Uncompress the folder and move it to 
-`/data/semantic_kitti/dataset`.
- 
-- Preparing the dataset:
-```
-python utils/data_prepare_semantickitti.py
+python -B main_S3DIS.py --gpu 0 --mode test --test_area 1
 ```
 
-- Start training:
-```
-python main_SemanticKITTI.py --mode train --gpu 0
-```
-
-- Evaluation:
-```
-sh jobs_test_semantickitti.sh
-```
-
-Quantitative results of different approaches on SemanticKITTI dataset:
-
-![s](http://randla-net.cs.ox.ac.uk/imgs/SemanticKITTI_table.png)
-
-Qualitative results of our RandLA-Net:
-
-![zzz](http://randla-net.cs.ox.ac.uk/imgs/SemanticKITTI-2.gif)    
-
-
-### (5) Demo
-
-<p align="center"> <a href="https://youtu.be/Ar3eY_lwzMk"><img src="http://randla-net.cs.ox.ac.uk/imgs/demo_cover.png" width="50%"></a> </p>
 
 
 ### Citation
@@ -154,9 +88,3 @@ If you find our work useful in your research, please consider citing:
 ### License
 Licensed under the CC BY-NC-SA 4.0 license, see [LICENSE](./LICENSE).
 
-
-### Updates
-* 21/03/2020: Updating all experimental results
-* 21/03/2020: Adding pretrained models and results
-* 02/03/2020: Code available!
-* 15/11/2019: Initial release！
