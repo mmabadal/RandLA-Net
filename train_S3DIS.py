@@ -16,8 +16,8 @@ class DATA:
         self.path = data_path
 
         #self.val_split = 'Area_' + str(test_area_idx)               # TODO DELETE CUANDO ARREGLE LO DE SPLIT TRAIN VAL
-        self.original = os.path.join(data_path, "original")
-        self.sub_folder = os.path.join(data_path, "sub")
+        self.original = os.path.join(self.path, "original")
+        self.sub_folder = os.path.join(self.path, "sub")
 
         # Initiate containers
         self.val_proj = []
