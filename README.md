@@ -44,6 +44,8 @@ data path changed in data_prepare_s3dis.py and main_S3DIS.py
 
 Reduced GPU memory usage: batch_size=3, numpoints=xxxx
 
+labels in output correspond to .ply in data/S3DIS/Stanford3dDataset_v1.2_Aligned_Version/original_ply
+
 
 
 
