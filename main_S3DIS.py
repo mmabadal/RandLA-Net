@@ -13,7 +13,7 @@ import time, pickle, argparse, glob, os
 class S3DIS:
     def __init__(self, test_area_idx):
         self.name = 'S3DIS'
-        self.path = '/data/S3DIS'
+        self.path = '/home/miguel/Desktop/data/S3DIS'
         self.label_to_names = {0: 'ceiling',
                                1: 'floor',
                                2: 'wall',
