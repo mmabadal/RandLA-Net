@@ -52,10 +52,10 @@ def convert_pc2ply(case):
 
     for f in glob.glob(join(anno_path, '*.txt')):
         class_name = os.path.basename(f).split('_')[0]
-        if class_name not in gt_class:  # note: in some room there is 'staris' class..
+        if class_name not in gt_class: 
             print("ERROR, " + str(class_name) + " CLASE NAME NOT RECOGNIZED")
             break
-        pc = pd.read_csv(f, header=None, delim_whitespace=True).values
+        pc = pd.read_csv(f, header=None, delim_whitespace=True).values                # TODO LEER DESDE PLY?
         labels = np.ones((pc.shape[0], 1)) * gt_class2label[class_name]
         data_list.append(np.concatenate([pc, labels], 1))  # Nx7
 
