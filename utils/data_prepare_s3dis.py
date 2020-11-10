@@ -41,7 +41,7 @@ if not os.path.exists(path_orig):
 if not os.path.exists(path_out_sub):
     os.mkdir(path_out_sub)
 
-classes, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
+classes, label_values, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
 
 sub_grid_size = 0.04
 
