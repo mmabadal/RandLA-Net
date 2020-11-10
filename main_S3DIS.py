@@ -12,32 +12,11 @@ import time, pickle, argparse, glob, os
 
 class DATA:
     def __init__(self, data_path):
-        self.name = 'DATA'
+        self.name = 'S3DIS'                                          # CAMBIAR 
         self.path = data_path
 
-        self.classes, self.c_labels, self.label2color, self.label2names = DP.get_info_classes(path_cls)
-
-        self.label_to_names = {0: 'ceiling',
-                               1: 'floor',
-                               2: 'wall',
-                               3: 'beam',
-                               4: 'column',
-                               5: 'window',
-                               6: 'door',
-                               7: 'table',
-                               8: 'chair',
-                               9: 'sofa',
-                               10: 'bookcase',
-                               11: 'board',
-                               12: 'clutter'}
-        self.num_classes = len(self.classes)
-        self.label_values = np.sort([k for k, v in self.label_to_names.items()])
-        self.label_to_idx = {l: i for i, l in enumerate(self.label_values)}
-        self.ignored_labels = np.array([])
-
-        #self.val_split = 'Area_' + str(test_area_idx)               # TODO DELETE CUANDO ARREGLE LO DE SPLIT TRAIN VAL
-        self.original = os.path.join(data_path, "original")
-        self.sub_folder = os.path.join(data_path, "sub")
+        self.original = os.path.join(self.path, "original")
+        self.sub_folder = os.path.join(self.path, "sub")
 
         # Initiate containers
         self.val_proj = []
@@ -52,49 +31,43 @@ class DATA:
 
     def load_sub_sampled_clouds(self, sub_grid_size):
         
-        for cloud in os.listdir(original_folder):
-            t0 = time.time()
-            cloud_name = cloud[:-4]
-            if self.val_split in cloud_name:                        # TODO ELEGIR COMO HAGO SPLIT TRAIN VAL!!!!!!! SOLO EN ORIGINAL ES NECESARIO CREO
-                cloud_split = 'validation'
-            else:
-                cloud_split = 'training'
+        for split in ('training','validation'):
+            for cloud in os.listdir(os.path.join(self.original, split)):  
+                 
+                cloud_name = cloud[:-4]
+                cloud_split = split
 
-            # Name of the input files
-            kd_tree_file = join(self.path, '{:s}_KDTree.pkl'.format(cloud_name))
-            sub_ply_file = join(self.path, '{:s}.ply'.format(cloud_name))
+                # Name of the input files
+                kd_tree_file = join(self.sub_folder, '{:s}_KDTree.pkl'.format(cloud_name))
+                sub_ply_file = join(self.sub_folder, '{:s}.ply'.format(cloud_name))
 
-            data = read_ply(sub_ply_file)
-            sub_colors = np.vstack((data['red'], data['green'], data['blue'])).T
-            sub_labels = data['class']
+                data = read_ply(sub_ply_file)
+                sub_colors = np.vstack((data['red'], data['green'], data['blue'])).T
+                sub_labels = data['class']
 
-            # Read pkl with search tree
-            with open(kd_tree_file, 'rb') as f:
-                search_tree = pickle.load(f)
+                # Read pkl with search tree
+                with open(kd_tree_file, 'rb') as f:
+                    search_tree = pickle.load(f)
 
-            self.input_trees[cloud_split] += [search_tree]
-            self.input_colors[cloud_split] += [sub_colors]
-            self.input_labels[cloud_split] += [sub_labels]
-            self.input_names[cloud_split] += [cloud_name]
+                self.input_trees[cloud_split] += [search_tree]
+                self.input_colors[cloud_split] += [sub_colors]
+                self.input_labels[cloud_split] += [sub_labels]
+                self.input_names[cloud_split] += [cloud_name]
 
-            size = sub_colors.shape[0] * 4 * 7
-            print('{:s} {:.1f} MB loaded in {:.1f}s'.format(kd_tree_file.split('/')[-1], size * 1e-6, time.time() - t0))
+                size = sub_colors.shape[0] * 4 * 7
 
         print('\nPreparing reprojected indices for testing')
 
         # Get validation and test reprojected indices
-        for cloud in os.listdir(original_folder):
-            t0 = time.time()
+        for cloud in os.listdir(os.path.join(self.original, "validation")): 
             cloud_name = cloud[:-4]
 
             # Validation projection and labels
-            if self.val_split in cloud_name:                                    # TODO ELEGIR COMO HAGO SPLIT TRAIN VAL!!!!!!! SOLO EN ORIGINAL ES NECESARIO CREO
-                proj_file = join(self.path, '{:s}_proj.pkl'.format(cloud_name))
-                with open(proj_file, 'rb') as f:
-                    proj_idx, labels = pickle.load(f)
-                self.val_proj += [proj_idx]
-                self.val_labels += [labels]
-                print('{:s} done in {:.1f}s'.format(cloud_name, time.time() - t0))
+            proj_file = join(self.sub_folder, '{:s}_proj.pkl'.format(cloud_name))
+            with open(proj_file, 'rb') as f:
+                proj_idx, labels = pickle.load(f)
+            self.val_proj += [proj_idx]
+            self.val_labels += [labels]
 
     # Generate the input data flow
     def get_batch_gen(self, split):
@@ -199,7 +172,7 @@ class DATA:
 
     def init_input_pipeline(self):
         print('Initiating input pipelines')
-        cfg.ignored_label_inds = [self.label_to_idx[ign_label] for ign_label in self.ignored_labels]
+        cfg.ignored_label_inds = [] # AÑADIR LABELS DE LAS QUE SE QUIERAN IGNORAR
         gen_function, gen_types, gen_shapes = self.get_batch_gen('training')
         gen_function_val, _, _ = self.get_batch_gen('validation')
         self.train_data = tf.data.Dataset.from_generator(gen_function, gen_types, gen_shapes)
@@ -224,8 +197,8 @@ class DATA:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=int, default=0, help='the number of GPUs to use [default: 0]')
-    parser.add_argument('--data_path', type=str,, help='path to data')
-    parser.add_argument('--model_path', type=str, help='path to pretrained model path')
+    parser.add_argument('--data_path', type=str, help='path to data')
+    parser.add_argument('--model_path', type=str, default='None', help='pretrained model path')
     FLAGS = parser.parse_args()
 
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
