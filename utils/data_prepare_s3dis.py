@@ -26,6 +26,8 @@ path_out = parsed_args.path_out
 path_cls = parsed_args.path_cls
 
 path_orig = os.path.join(path_out,"original")
+path_orig_train = os.path.join(path_orig,"training")
+path_orig_val = os.path.join(path_orig,"validation")
 path_out_sub = os.path.join(path_out,"sub")
 
 if not os.path.exists(path_out):
@@ -33,6 +35,8 @@ if not os.path.exists(path_out):
 
 if not os.path.exists(path_orig):
     os.mkdir(path_orig)
+    os.mkdir(path_orig_train)
+    os.mkdir(path_orig_val)
 
 if not os.path.exists(path_out_sub):
     os.mkdir(path_out_sub)
@@ -41,7 +45,7 @@ classes, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
 
 sub_grid_size = 0.04
 
-def convert_pc2ply(case):
+def convert_pc2ply(case, split):
     """
     Convert original dataset files to ply file (each line is XYZRGBL).
     We aggregated all the points from each instance in the room.
@@ -50,7 +54,7 @@ def convert_pc2ply(case):
     """
     data_list = []
 
-    anno_path = os.path.join(path_in, case, "Annotations")
+    anno_path = os.path.join(path_in, split, case, "annotations")
 
     for f in glob.glob(join(anno_path, '*.txt')):
         class_name = os.path.basename(f).split('_')[0]
@@ -68,7 +72,7 @@ def convert_pc2ply(case):
     xyz = pc_label[:, :3].astype(np.float32)
     colors = pc_label[:, 3:6].astype(np.uint8)
     labels = pc_label[:, 6].astype(np.uint8)
-    ply_file = os.path.join(path_orig, case + ".ply" )
+    ply_file = os.path.join(path_orig, split, case + ".ply" )
     write_ply(ply_file, (xyz, colors, labels), ['x', 'y', 'z', 'red', 'green', 'blue', 'class'])
 
     # save sub_cloud and KDTree file
@@ -90,6 +94,8 @@ def convert_pc2ply(case):
 
 
 if __name__ == '__main__':
-    for folder in natsorted(os.listdir(path_in)):
-        print("working on case: " + str(folder))
-        convert_pc2ply(folder)
+
+    for split in ("training", "validation"):
+        for folder in natsorted(os.listdir(os.path.join(path_in, split))):
+            print("working on case: " + str(folder))
+            convert_pc2ply(folder, split)

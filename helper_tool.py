@@ -110,7 +110,7 @@ class DataProcessing:
             data = line.split()
             classes.append(data[0])
             colors.append([int(data[1]), int(data[2]), int(data[3])])
-        labels = {cls: i for i, cls in enumerate(classes)}
+        class2labels = {cls: i for i, cls in enumerate(classes)}
         label2color = {classes.index(cls): colors[classes.index(cls)] for cls in classes}
         label2names = {classes.index(cls): cls for cls in classes}
 
