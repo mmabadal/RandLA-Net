@@ -15,7 +15,7 @@ def log_out(out_str, f_out):
 
 
 class Network:
-    def __init__(self, dataset, config):
+    def __init__(self, config):
         flat_inputs = dataset.flat_inputs
         self.config = config
         # Path of the result folder
@@ -45,7 +45,7 @@ class Network:
             self.correct_prediction = 0
             self.accuracy = 0
             self.mIou_list = [0]
-            self.class_weights = DP.get_class_weights(dataset.name)
+            self.class_weights = DP.get_class_weights()
             self.Log_file = open('log_train.txt', 'a')
 
         with tf.variable_scope('layers'):
