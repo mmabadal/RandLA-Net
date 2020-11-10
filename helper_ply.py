@@ -292,16 +292,17 @@ def write_ply(filename, field_list, field_names, triangular_faces=None):
         # End of header
         header.append('end_header')
 
+        '''
         for i in range(field_list[0].shape[0]):
             preds = field_list[0]
             pred = int(preds[i])*20                         # TODO ARREGLAR PRINT
             header.append(str(pred))
+        '''
 
         # Write all lines
         for line in header:
             plyfile.write("%s\n" % line)
 
-    '''
     # open in binary/append to use tofile
     with open(filename, 'ab') as plyfile:
 
@@ -330,7 +331,7 @@ def write_ply(filename, field_list, field_names, triangular_faces=None):
             data['1'] = triangular_faces[:, 1]
             data['2'] = triangular_faces[:, 2]
             data.tofile(plyfile)
-    '''
+    
     
     return True
 
