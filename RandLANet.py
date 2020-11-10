@@ -15,7 +15,7 @@ def log_out(out_str, f_out):
 
 
 class Network:
-    def __init__(self, dataset, config):
+    def __init__(self, config):
         flat_inputs = dataset.flat_inputs
         self.config = config
         # Path of the result folder
