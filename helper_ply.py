@@ -294,9 +294,8 @@ def write_ply(filename, field_list, field_names, triangular_faces=None):
 
         for i in range(field_list[0].shape[0]):
             preds = field_list[0]
-            pred = int(preds[i])*20
+            pred = int(preds[i])*20                         # TODO ARREGLAR PRINT
             header.append(str(pred))
-1
 
         # Write all lines
         for line in header:

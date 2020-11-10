@@ -11,12 +11,18 @@ import time, pickle, argparse, glob, os
 
 
 class DATA:
-    def __init__(self, data_path):
-        self.name = 'S3DIS'                                          # CAMBIAR 
+    def __init__(self, data_path, path_cls):
+        self.name = 'S3DIS'                                          # TODO CAMBIAR 
         self.path = data_path
 
         self.original = os.path.join(self.path, "original")
         self.sub_folder = os.path.join(self.path, "sub")
+
+        classes, label_values, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
+        self.label_values = np.array(label_values)
+
+        self.ignored_classes = []       # TODO PONER IGNORED LABELS EN FUNCION DE ESTO, CAMBIAR EN TRAIN
+        self.ignored_labels = np.array([])
 
         # Initiate containers
         self.val_proj = []
@@ -31,7 +37,7 @@ class DATA:
 
     def load_sub_sampled_clouds(self, sub_grid_size):
         
-        for split in ('training','validation'):
+        for split in ('training','validation'):   # TODO CARGAR SOLO VALS???
             for cloud in os.listdir(os.path.join(self.original, split)):  
                  
                 cloud_name = cloud[:-4]
@@ -172,7 +178,7 @@ class DATA:
 
     def init_input_pipeline(self):
         print('Initiating input pipelines')
-        cfg.ignored_label_inds = [] # AÑADIR LABELS DE LAS QUE SE QUIERAN IGNORAR
+        cfg.ignored_label_inds = [self.labels[ign_label] for ign_label in self.ignored_labels]
         gen_function, gen_types, gen_shapes = self.get_batch_gen('training')
         gen_function_val, _, _ = self.get_batch_gen('validation')
         self.train_data = tf.data.Dataset.from_generator(gen_function, gen_types, gen_shapes)
@@ -198,6 +204,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=int, default=0, help='the number of GPUs to use [default: 0]')
     parser.add_argument('--data_path', type=str, help='path to data')
+    parser.add_argument('--path_cls', type=str, help='path to classes')
     parser.add_argument('--model_path', type=str, default='None', help='pretrained model path')
     FLAGS = parser.parse_args()
 
@@ -206,7 +213,8 @@ if __name__ == '__main__':
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
     data_path = FLAGS.data_path
-    dataset = DATA(data_path)
+    path_cls = FLAGS.path_cls
+    dataset = DATA(data_path, path_cls)
     dataset.init_input_pipeline()
 
     cfg.saving = False

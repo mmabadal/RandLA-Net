@@ -101,6 +101,22 @@ class ConfigSemantic3D:
 
 
 class DataProcessing:
+
+    @staticmethod
+    def get_info_classes(cls_path):
+        classes = []
+        colors = []
+        for line in open(cls_path):
+            data = line.split()
+            classes.append(data[0])
+            colors.append([int(data[1]), int(data[2]), int(data[3])])
+        labels = [i for i, cls in enumerate(classes)]
+        class2labels = {cls: i for i, cls in enumerate(classes)}
+        label2color = {classes.index(cls): colors[classes.index(cls)] for cls in classes}
+        label2names = {classes.index(cls): cls for cls in classes}
+
+        return classes, labels, class2labels, label2color, label2names
+
     @staticmethod
     def load_pc_semantic3d(filename):
         pc_pd = pd.read_csv(filename, header=None, delim_whitespace=True, dtype=np.float16)
