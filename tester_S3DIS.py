@@ -71,21 +71,21 @@ class ModelTester:
             try:
                 ops = (self.prob_logits,
                        model.labels,
-                       model.inputs['input_inds'],
+                       model.inputs['input_inds'],              # TODO EXISTE UN MODEL.INPUTS['XYZ'] PRINTEAR SHAPE Y CONTENIDO DE ESTO
                        model.inputs['cloud_inds'],
                        )
 
-                stacked_probs, stacked_labels, point_idx, cloud_idx = self.sess.run(ops, {model.is_training: False})  # TODO SACA PROBS
+                stacked_probs, stacked_labels, point_idx, cloud_idx = self.sess.run(ops, {model.is_training: False})  # TODO SACA PROBS, se puede sacar que caso es con cloud idx?
                 correct = np.sum(np.argmax(stacked_probs, axis=1) == stacked_labels)
                 acc = correct / float(np.prod(np.shape(stacked_labels)))
                 print('step' + str(step_id) + ' acc:' + str(acc))
                 stacked_probs = np.reshape(stacked_probs, [model.config.val_batch_size, model.config.num_points,
                                                            model.config.num_classes])
 
-                for j in range(np.shape(stacked_probs)[0]):
+                for j in range(np.shape(stacked_probs)[0]):  # TODO SHAPE Y CONTENIDO DE STACKED PROBS
                     probs = stacked_probs[j, :, :]
                     p_idx = point_idx[j, :]
-                    c_i = cloud_idx[j][0]
+                    c_i = cloud_idx[j][0]                   # TODO ?? C_I
                     self.test_probs[c_i][p_idx] = test_smooth * self.test_probs[c_i][p_idx] + (1 - test_smooth) * probs # TODO GUARDA PROBS SMOOTHED
                 step_id += 1
 
@@ -152,7 +152,7 @@ class ModelTester:
                             log_out(dataset.input_names['validation'][i_test] + ' Acc:' + str(acc), self.Log_file)
 
                             confusion_list += [confusion_matrix(labels, preds, dataset.label_values)]
-                            name = dataset.input_names['validation'][i_test] + '.ply'
+                            name = dataset.input_names['validation'][i_test] + '.ply'                               # TODO ASI COMO AQUI COGE EL NOMBRE, COGER DATOS O ABRIR ORIGINAL CON ESTE NOMBRE A LO BURRO
                             write_ply(join(test_path, 'val_preds', name), [preds, labels], ['pred', 'label'])      # TODO ARREGLAR WRIITE, VER QUE SE MANDA
 
                         # Regroup confusions
