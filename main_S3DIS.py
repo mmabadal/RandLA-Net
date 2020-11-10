@@ -10,10 +10,13 @@ import numpy as np
 import time, pickle, argparse, glob, os
 
 
-class S3DIS:
-    def __init__(self, test_area_idx):
-        self.name = 'S3DIS'
-        self.path = '/home/miguel/Desktop/data/S3DIS'
+class DATA:
+    def __init__(self, data_path):
+        self.name = 'DATA'
+        self.path = data_path
+
+        self.classes, self.c_labels, self.label2color, self.label2names = DP.get_info_classes(path_cls)
+
         self.label_to_names = {0: 'ceiling',
                                1: 'floor',
                                2: 'wall',
@@ -27,13 +30,14 @@ class S3DIS:
                                10: 'bookcase',
                                11: 'board',
                                12: 'clutter'}
-        self.num_classes = len(self.label_to_names)
+        self.num_classes = len(self.classes)
         self.label_values = np.sort([k for k, v in self.label_to_names.items()])
         self.label_to_idx = {l: i for i, l in enumerate(self.label_values)}
         self.ignored_labels = np.array([])
 
-        self.val_split = 'Area_' + str(test_area_idx)
-        self.all_files = glob.glob(join(self.path, 'original_ply', '*.ply'))
+        #self.val_split = 'Area_' + str(test_area_idx)               # TODO DELETE CUANDO ARREGLE LO DE SPLIT TRAIN VAL
+        self.original = os.path.join(data_path, "original")
+        self.sub_folder = os.path.join(data_path, "sub")
 
         # Initiate containers
         self.val_proj = []
@@ -47,18 +51,18 @@ class S3DIS:
         self.load_sub_sampled_clouds(cfg.sub_grid_size)
 
     def load_sub_sampled_clouds(self, sub_grid_size):
-        tree_path = join(self.path, 'input_{:.3f}'.format(sub_grid_size))
-        for i, file_path in enumerate(self.all_files):
+        
+        for cloud in os.listdir(original_folder):
             t0 = time.time()
-            cloud_name = file_path.split('/')[-1][:-4]
-            if self.val_split in cloud_name:
+            cloud_name = cloud[:-4]
+            if self.val_split in cloud_name:                        # TODO ELEGIR COMO HAGO SPLIT TRAIN VAL!!!!!!! SOLO EN ORIGINAL ES NECESARIO CREO
                 cloud_split = 'validation'
             else:
                 cloud_split = 'training'
 
             # Name of the input files
-            kd_tree_file = join(tree_path, '{:s}_KDTree.pkl'.format(cloud_name))
-            sub_ply_file = join(tree_path, '{:s}.ply'.format(cloud_name))
+            kd_tree_file = join(self.path, '{:s}_KDTree.pkl'.format(cloud_name))
+            sub_ply_file = join(self.path, '{:s}.ply'.format(cloud_name))
 
             data = read_ply(sub_ply_file)
             sub_colors = np.vstack((data['red'], data['green'], data['blue'])).T
@@ -79,13 +83,13 @@ class S3DIS:
         print('\nPreparing reprojected indices for testing')
 
         # Get validation and test reprojected indices
-        for i, file_path in enumerate(self.all_files):
+        for cloud in os.listdir(original_folder):
             t0 = time.time()
-            cloud_name = file_path.split('/')[-1][:-4]
+            cloud_name = cloud[:-4]
 
             # Validation projection and labels
-            if self.val_split in cloud_name:
-                proj_file = join(tree_path, '{:s}_proj.pkl'.format(cloud_name))
+            if self.val_split in cloud_name:                                    # TODO ELEGIR COMO HAGO SPLIT TRAIN VAL!!!!!!! SOLO EN ORIGINAL ES NECESARIO CREO
+                proj_file = join(self.path, '{:s}_proj.pkl'.format(cloud_name))
                 with open(proj_file, 'rb') as f:
                     proj_idx, labels = pickle.load(f)
                 self.val_proj += [proj_idx]
@@ -220,50 +224,22 @@ class S3DIS:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=int, default=0, help='the number of GPUs to use [default: 0]')
-    parser.add_argument('--test_area', type=int, default=5, help='Which area to use for test, option: 1-6 [default: 5]')
-    parser.add_argument('--mode', type=str, default='train', help='options: train, test, vis')
-    parser.add_argument('--model_path', type=str, default='None', help='pretrained model path')
+    parser.add_argument('--data_path', type=str,, help='path to data')
+    parser.add_argument('--model_path', type=str, help='path to pretrained model path')
     FLAGS = parser.parse_args()
 
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ['CUDA_VISIBLE_DEVICES'] = str(FLAGS.gpu)
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-    Mode = FLAGS.mode
 
-    test_area = FLAGS.test_area
-    dataset = S3DIS(test_area)
+    data_path = FLAGS.data_path
+    dataset = DATA(data_path)
     dataset.init_input_pipeline()
 
-    if Mode == 'train':
-        model = Network(dataset, cfg)
-        model.train(dataset)
-    elif Mode == 'test':
-        cfg.saving = False
-        model = Network(dataset, cfg)
-        if FLAGS.model_path is not 'None':
-            chosen_snap = FLAGS.model_path
-        else:
-            chosen_snapshot = -1
-            logs = np.sort([os.path.join('results', f) for f in os.listdir('results') if f.startswith('Log')])
-            chosen_folder = logs[-1]
-            snap_path = join(chosen_folder, 'snapshots')
-            snap_steps = [int(f[:-5].split('-')[-1]) for f in os.listdir(snap_path) if f[-5:] == '.meta']
-            chosen_step = np.sort(snap_steps)[-1]
-            chosen_snap = os.path.join(snap_path, 'snap-{:d}'.format(chosen_step))
-        tester = ModelTester(model, dataset, restore_snap=chosen_snap)
-        tester.test(model, dataset)
-    else:
-        ##################
-        # Visualize data #
-        ##################
+    cfg.saving = False
+    model = Network(dataset, cfg)
+    chosen_snap = FLAGS.model_path
 
-        with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
-            sess.run(dataset.train_init_op)
-            while True:
-                flat_inputs = sess.run(dataset.flat_inputs)
-                pc_xyz = flat_inputs[0]
-                sub_pc_xyz = flat_inputs[1]
-                labels = flat_inputs[21]
-                Plot.draw_pc_sem_ins(pc_xyz[0, :, :], labels[0, :])
-                Plot.draw_pc_sem_ins(sub_pc_xyz[0, :, :], labels[0, 0:np.shape(sub_pc_xyz)[1]])
+    tester = ModelTester(model, dataset, restore_snap=chosen_snap)
+    tester.test(model, dataset)
+
