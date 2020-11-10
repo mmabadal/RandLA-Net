@@ -19,9 +19,9 @@ class DATA:
         self.sub_folder = os.path.join(self.path, "sub")
 
         classes, label_values, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
-        self.label_values = np.array(label_values)
+        self.label_values = np.array(label_values)              # TODO CONVERTIR AQUI O EN GET_INFO_CLASSES??
 
-        self.ignored_classes = []       # TODO PONER IGNORED LABELS EN FUNCION DE ESTO, CAMBIAR EN TRAIN
+        self.ignored_classes = []       # TODO PONER IGNORED LABELS EN FUNCION DE ESTO
         self.ignored_labels = np.array([])
 
         # Initiate containers
@@ -37,7 +37,7 @@ class DATA:
 
     def load_sub_sampled_clouds(self, sub_grid_size):
         
-        for split in ('training','validation'):   # TODO CARGAR SOLO VALS???
+        for split in ('training','validation'):   # TODO CARGAR SOLO VALS???  JUNTAR ESTO CON TRAIN ?? TENER UNO A PARTE PARA EL REL-TIME??
             for cloud in os.listdir(os.path.join(self.original, split)):  
                  
                 cloud_name = cloud[:-4]

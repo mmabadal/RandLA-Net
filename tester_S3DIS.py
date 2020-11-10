@@ -153,7 +153,7 @@ class ModelTester:
 
                             confusion_list += [confusion_matrix(labels, preds, dataset.label_values)]
                             name = dataset.input_names['validation'][i_test] + '.ply'
-                            write_ply(join(test_path, 'val_preds', name), [preds, labels], ['pred', 'label'])
+                            write_ply(join(test_path, 'val_preds', name), [preds, labels], ['pred', 'label'])      # TODO ARREGLAR WRIITE, VER QUE SE MANDA
 
                         # Regroup confusions
                         C = np.sum(np.stack(confusion_list), axis=0)

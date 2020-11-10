@@ -12,11 +12,17 @@ import time, pickle, argparse, glob, os
 
 class DATA:
     def __init__(self, data_path):
-        self.name = 'S3DIS'                                          # CAMBIAR 
+        self.name = 'S3DIS'                                          # TODO CAMBIAR 
         self.path = data_path
 
         self.original = os.path.join(self.path, "original")
         self.sub_folder = os.path.join(self.path, "sub")
+
+
+
+
+        self.ignored_classes = []       # TODO PONER IGNORED LABELS EN FUNCION DE ESTO
+        self.ignored_labels = np.array([])
 
         # Initiate containers
         self.val_proj = []
@@ -172,7 +178,7 @@ class DATA:
 
     def init_input_pipeline(self):
         print('Initiating input pipelines')
-        cfg.ignored_label_inds = [] # AÑADIR LABELS DE LAS QUE SE QUIERAN IGNORAR
+        cfg.ignored_label_inds = [self.labels[ign_label] for ign_label in self.ignored_labels]
         gen_function, gen_types, gen_shapes = self.get_batch_gen('training')
         gen_function_val, _, _ = self.get_batch_gen('validation')
         self.train_data = tf.data.Dataset.from_generator(gen_function, gen_types, gen_shapes)
