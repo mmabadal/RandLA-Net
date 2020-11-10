@@ -215,6 +215,6 @@ if __name__ == '__main__':
     dataset = DATA(data_path)
     dataset.init_input_pipeline()
 
-    model = Network(dataset, cfg)
+    model = Network(cfg)
     model.train(dataset)
 
