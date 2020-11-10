@@ -218,7 +218,7 @@ if __name__ == '__main__':
     dataset.init_input_pipeline()
 
     cfg.saving = False
-    model = Network(cfg)
+    model = Network(dataset, cfg)
     chosen_snap = FLAGS.model_path
 
     tester = ModelTester(model, dataset, restore_snap=chosen_snap)
