@@ -58,7 +58,7 @@ class DATA:
                 self.input_trees[cloud_split] += [search_tree]
                 self.input_colors[cloud_split] += [sub_colors]
                 self.input_labels[cloud_split] += [sub_labels]
-                self.input_names[cloud_split] += [cloud_name]
+                self.input_names[cloud_split] += [cloud_name]       # TODO QUE SON ESTOS DICCIONARIOS? IDX DE TRAIN Y VAL? SE PUEDE QUITAR AHORA QUE ESTA POR CARPETAS? O SE USA SOBRE SUB SIN SPLIT
 
                 size = sub_colors.shape[0] * 4 * 7
 
@@ -141,7 +141,7 @@ class DATA:
                            queried_pc_colors.astype(np.float32),
                            queried_pc_labels,
                            queried_idx.astype(np.int32),
-                           np.array([cloud_idx], dtype=np.int32))
+                           np.array([cloud_idx], dtype=np.int32))# TODO QUE SON ESTOS DICCIONARIOS? IDX DE TRAIN Y VAL? SE PUEDE QUITAR AHORA QUE ESTA POR CARPETAS? O SE USA SOBRE SUB SIN SPLIT
 
         gen_func = spatially_regular_gen
         gen_types = (tf.float32, tf.float32, tf.int32, tf.int32, tf.int32)

@@ -38,8 +38,8 @@ class ModelTester:
         self.prob_logits = tf.nn.softmax(model.logits)
 
         # Initiate global prediction over all test clouds
-        self.test_probs = [np.zeros(shape=[l.shape[0], model.config.num_classes], dtype=np.float32)
-                           for l in dataset.input_labels['validation']]
+        self.test_probs = [np.zeros(shape=[l.shape[0], model.config.num_classes], dtype=np.float32)     # TODO QUE AHCE AQUI? SE PUEDE QUITAR? RELACIONADO CON INPUT LABELS DE TEST_S3DIS.PY
+                           for l in dataset.input_labels['validation']]                         
 
     def test(self, model, dataset, num_votes=100):
 

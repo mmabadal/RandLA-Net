@@ -58,7 +58,7 @@ class DATA:
                 self.input_trees[cloud_split] += [search_tree]
                 self.input_colors[cloud_split] += [sub_colors]
                 self.input_labels[cloud_split] += [sub_labels]
-                self.input_names[cloud_split] += [cloud_name]
+                self.input_names[cloud_split] += [cloud_name]       # TODO QUE SON ESTOS DICCIONARIOS? IDX DE TRAIN Y VAL? SE PUEDE QUITAR AHORA QUE ESTA POR CARPETAS? O SE USA SOBRE SUB SIN SPLIT
 
                 size = sub_colors.shape[0] * 4 * 7
 
