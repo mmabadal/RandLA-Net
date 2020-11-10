@@ -196,7 +196,7 @@ class DATA:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=int, default=0, help='the number of GPUs to use [default: 0]')
-    parser.add_argument('--data_path', type=int, default=5, help='Which area to use for test, option: 1-6 [default: 5]')
+    parser.add_argument('--data_path', type=str, help='path to data')
     parser.add_argument('--model_path', type=str, default='None', help='pretrained model path')
     FLAGS = parser.parse_args()
 
