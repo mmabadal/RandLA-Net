@@ -54,7 +54,7 @@ def convert_pc2ply(case, split):
     """
     data_list = []
 
-    anno_path = os.path.join(path_in, split, case, "annotations")
+    anno_path = os.path.join(path_in, split, case, "Annotations")
 
     for f in glob.glob(join(anno_path, '*.txt')):
         class_name = os.path.basename(f).split('_')[0]
