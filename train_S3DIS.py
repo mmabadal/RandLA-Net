@@ -214,6 +214,7 @@ if __name__ == '__main__':
     data_path = FLAGS.data_path
     dataset = DATA(data_path)
     dataset.init_input_pipeline()
+    cfg.train_dir = time.strftime('RUNS/%Y-%m-%d_%H-%M-%S', time.gmtime())
 
     model = Network(dataset, cfg)
     model.train(dataset)

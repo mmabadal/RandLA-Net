@@ -1,5 +1,6 @@
 from os.path import exists, join
 from os import makedirs
+import os
 from sklearn.metrics import confusion_matrix
 from helper_tool import DataProcessing as DP
 import tensorflow as tf
@@ -21,7 +22,7 @@ class Network:
         # Path of the result folder
         if self.config.saving:
             if self.config.saving_path is None:
-                self.saving_path = time.strftime('results/Log_%Y-%m-%d_%H-%M-%S', time.gmtime())
+                self.saving_path = config.train_dir
             else:
                 self.saving_path = self.config.saving_path
             makedirs(self.saving_path) if not exists(self.saving_path) else None
@@ -46,7 +47,7 @@ class Network:
             self.accuracy = 0
             self.mIou_list = [0]
             self.class_weights = DP.get_class_weights()
-            self.Log_file = open('log_train.txt', 'a')
+            self.Log_file = open(os.path.join(config.train_dir, 'log_train.txt'), 'a')
 
         with tf.variable_scope('layers'):
             self.logits = self.inference(self.inputs, self.is_training)
@@ -97,7 +98,7 @@ class Network:
         c_proto.gpu_options.allow_growth = True
         self.sess = tf.Session(config=c_proto)
         self.merged = tf.summary.merge_all()
-        self.train_writer = tf.summary.FileWriter(config.train_sum_dir, self.sess.graph)
+        self.train_writer = tf.summary.FileWriter(os.path.join(config.train_dir,"log"), self.sess.graph)
         self.sess.run(tf.global_variables_initializer())
 
     def inference(self, inputs, is_training):

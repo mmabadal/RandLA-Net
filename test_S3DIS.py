@@ -205,7 +205,8 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', type=int, default=0, help='the number of GPUs to use [default: 0]')
     parser.add_argument('--data_path', type=str, help='path to data')
     parser.add_argument('--path_cls', type=str, help='path to classes')
-    parser.add_argument('--model_path', type=str, default='None', help='pretrained model path')
+    parser.add_argument('--run', type=str, default='None', help='run folder path')
+    parser.add_argument('--snap', type=str, default='None', help='snapshot number')
     FLAGS = parser.parse_args()
 
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -218,9 +219,12 @@ if __name__ == '__main__':
     dataset.init_input_pipeline()
 
     cfg.saving = False
-    model = Network(dataset, cfg)
-    chosen_snap = FLAGS.model_path
+    run = FLAGS.run
+    snap = FLAGS.snap
+    cfg.train_dir = run
 
-    tester = ModelTester(model, dataset, restore_snap=chosen_snap)
-    tester.test(model, dataset)
+    model = Network(dataset, cfg)
+
+    tester = ModelTester(model, dataset, run, restore_snap=snap)
+    tester.test(model, dataset, run)
 

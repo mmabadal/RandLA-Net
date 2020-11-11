@@ -6,6 +6,7 @@ from helper_tool import DataProcessing as DP
 import tensorflow as tf
 import numpy as np
 import time
+import os
 
 
 def log_out(out_str, log_f_out):
@@ -15,10 +16,10 @@ def log_out(out_str, log_f_out):
 
 
 class ModelTester:
-    def __init__(self, model, dataset, restore_snap=None):
+    def __init__(self, model, dataset, run, restore_snap=None):
         my_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
         self.saver = tf.train.Saver(my_vars, max_to_keep=100)
-        self.Log_file = open('log_test.txt', 'a')
+        self.Log_file = open(os.path.join(run,'log_test.txt'), 'a')
 
         # Create a session for running Ops on the Graph.
         on_cpu = False
@@ -32,6 +33,8 @@ class ModelTester:
 
         # Load trained model
         if restore_snap is not None:
+
+            restore_snap = os.path.join(run, 'snapshots', 'snap-'+str(restore_snap))
             self.saver.restore(self.sess, restore_snap)
             print("Model restored from " + restore_snap)
 
@@ -41,7 +44,7 @@ class ModelTester:
         self.test_probs = [np.zeros(shape=[l.shape[0], model.config.num_classes], dtype=np.float32)     # TODO QUE AHCE AQUI? SE PUEDE QUITAR? RELACIONADO CON INPUT LABELS DE TEST_S3DIS.PY
                            for l in dataset.input_labels['validation']]                         
 
-    def test(self, model, dataset, num_votes=100):
+    def test(self, model, dataset, run, num_votes=100):
 
         # Smoothing parameter for votes
         test_smooth = 0.95
@@ -58,10 +61,8 @@ class ModelTester:
                 i += 1
 
         # Test saving path
-        saving_path = time.strftime('results/Log_%Y-%m-%d_%H-%M-%S', time.gmtime())
-        test_path = join('test', saving_path.split('/')[-1])
+        test_path = os.path.join(run, 'predictions')
         makedirs(test_path) if not exists(test_path) else None
-        makedirs(join(test_path, 'val_preds')) if not exists(join(test_path, 'val_preds')) else None
 
         step_id = 0
         epoch_id = 0
@@ -153,7 +154,7 @@ class ModelTester:
 
                             confusion_list += [confusion_matrix(labels, preds, dataset.label_values)]
                             name = dataset.input_names['validation'][i_test] + '.ply'                               # TODO ASI COMO AQUI COGE EL NOMBRE, COGER DATOS O ABRIR ORIGINAL CON ESTE NOMBRE A LO BURRO
-                            write_ply(join(test_path, 'val_preds', name), [preds, labels], ['pred', 'label'])      # TODO ARREGLAR WRIITE, VER QUE SE MANDA
+                            write_ply(join(test_path, name), [preds, labels], ['pred', 'label'])      # TODO ARREGLAR WRIITE, VER QUE SE MANDA
 
                         # Regroup confusions
                         C = np.sum(np.stack(confusion_list), axis=0)
