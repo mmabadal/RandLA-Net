@@ -292,13 +292,6 @@ def write_ply(filename, field_list, field_names, triangular_faces=None):
         # End of header
         header.append('end_header')
 
-        '''
-        for i in range(field_list[0].shape[0]):
-            preds = field_list[0]
-            pred = int(preds[i])*20                         # TODO ARREGLAR PRINT
-            header.append(str(pred))
-        '''
-
         # Write all lines
         for line in header:
             plyfile.write("%s\n" % line)

@@ -17,7 +17,7 @@ class DATA:
         self.sub_folder = os.path.join(self.path, "sub")
 
         classes, label_values, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
-        self.label_values = np.array(label_values)              # TODO CONVERTIR AQUI O EN GET_INFO_CLASSES??
+        self.label_values = np.array(label_values)
 
         self.ignored_classes = []       # TODO PONER IGNORED LABELS EN FUNCION DE ESTO
         self.ignored_labels = np.array([])
@@ -27,46 +27,45 @@ class DATA:
         self.val_labels = []
         self.possibility = {}
         self.min_possibility = {}
-        self.input_trees = {'training': [], 'validation': []}
-        self.input_colors = {'training': [], 'validation': []}
-        self.input_labels = {'training': [], 'validation': []}
-        self.input_names = {'training': [], 'validation': []}
+        self.input_trees = {'validation': []}
+        self.input_colors = {'validation': []}
+        self.input_labels = {'validation': []}
+        self.input_names = {'validation': []}
+        self.input_full_xyz = {'validation': []}
         self.load_sub_sampled_clouds(cfg.sub_grid_size)
 
     def load_sub_sampled_clouds(self, sub_grid_size):
         
-        for split in ('training','validation'):   # TODO CARGAR SOLO VALS???  JUNTAR ESTO CON TRAIN ?? TENER UNO A PARTE PARA EL REL-TIME??
-            for cloud in os.listdir(os.path.join(self.original, split)):  
-                 
-                cloud_name = cloud[:-4]
-                cloud_split = split
-
-                # Name of the input files
-                kd_tree_file = join(self.sub_folder, '{:s}_KDTree.pkl'.format(cloud_name))
-                sub_ply_file = join(self.sub_folder, '{:s}.ply'.format(cloud_name))
-
-                data = read_ply(sub_ply_file)
-                sub_colors = np.vstack((data['red'], data['green'], data['blue'])).T
-                sub_labels = data['class']
-
-                # Read pkl with search tree
-                with open(kd_tree_file, 'rb') as f:
-                    search_tree = pickle.load(f)
-
-                self.input_trees[cloud_split] += [search_tree]
-                self.input_colors[cloud_split] += [sub_colors]
-                self.input_labels[cloud_split] += [sub_labels]
-                self.input_names[cloud_split] += [cloud_name]       # TODO QUE SON ESTOS DICCIONARIOS? IDX DE TRAIN Y VAL? SE PUEDE QUITAR AHORA QUE ESTA POR CARPETAS? O SE USA SOBRE SUB SIN SPLIT
-
-                size = sub_colors.shape[0] * 4 * 7
-
-        print('\nPreparing reprojected indices for testing')
-
-        # Get validation and test reprojected indices
-        for cloud in os.listdir(os.path.join(self.original, "validation")): 
+        for cloud in os.listdir(os.path.join(self.original, 'validation')):  
+                
             cloud_name = cloud[:-4]
 
-            # Validation projection and labels
+            # Name of the input files
+            kd_tree_file = join(self.sub_folder, '{:s}_KDTree.pkl'.format(cloud_name))
+            
+            sub_ply_file = join(self.sub_folder, '{:s}.ply'.format(cloud_name))
+            sub_data = read_ply(sub_ply_file)
+            sub_colors = np.vstack((sub_data['red'], sub_data['green'], sub_data['blue'])).T
+            sub_labels = sub_data['class']
+
+            full_ply_file = join(self.original, 'validation', '{:s}.ply'.format(cloud_name))
+            full_data = read_ply(full_ply_file)
+            full_xyz = np.vstack((full_data['x'], full_data['y'], full_data['z'])).T
+
+
+
+            # Read pkl with search tree
+            with open(kd_tree_file, 'rb') as f:
+                search_tree = pickle.load(f)
+
+            self.input_trees['validation'] += [search_tree]
+            self.input_colors['validation'] += [sub_colors]
+            self.input_labels['validation'] += [sub_labels]
+            self.input_names['validation'] += [cloud_name]       
+            self.input_full_xyz['validation'] += [full_xyz]    
+
+            
+            # Validation projection indices for testing and labels
             proj_file = join(self.sub_folder, '{:s}_proj.pkl'.format(cloud_name))
             with open(proj_file, 'rb') as f:
                 proj_idx, labels = pickle.load(f)
@@ -75,10 +74,8 @@ class DATA:
 
     # Generate the input data flow
     def get_batch_gen(self, split):
-        if split == 'training':
-            num_per_epoch = cfg.train_steps * cfg.batch_size
-        elif split == 'validation':
-            num_per_epoch = cfg.val_steps * cfg.val_batch_size
+
+        num_per_epoch = cfg.val_steps * cfg.val_batch_size
 
         self.possibility[split] = []
         self.min_possibility[split] = []
@@ -177,26 +174,20 @@ class DATA:
     def init_input_pipeline(self):
         print('Initiating input pipelines')
         cfg.ignored_label_inds = [self.labels[ign_label] for ign_label in self.ignored_labels]
-        gen_function, gen_types, gen_shapes = self.get_batch_gen('training')
-        gen_function_val, _, _ = self.get_batch_gen('validation')
-        self.train_data = tf.data.Dataset.from_generator(gen_function, gen_types, gen_shapes)
+        gen_function_val, gen_types, gen_shapes = self.get_batch_gen('validation')
         self.val_data = tf.data.Dataset.from_generator(gen_function_val, gen_types, gen_shapes)
 
-        self.batch_train_data = self.train_data.batch(cfg.batch_size)
         self.batch_val_data = self.val_data.batch(cfg.val_batch_size)
         map_func = self.get_tf_mapping2()
 
-        self.batch_train_data = self.batch_train_data.map(map_func=map_func)
         self.batch_val_data = self.batch_val_data.map(map_func=map_func)
 
-        self.batch_train_data = self.batch_train_data.prefetch(cfg.batch_size)
         self.batch_val_data = self.batch_val_data.prefetch(cfg.val_batch_size)
 
-        iter = tf.data.Iterator.from_structure(self.batch_train_data.output_types, self.batch_train_data.output_shapes)
+        iter = tf.data.Iterator.from_structure(self.batch_val_data.output_types, self.batch_val_data.output_shapes)
         self.flat_inputs = iter.get_next()
-        self.train_init_op = iter.make_initializer(self.batch_train_data)
+        
         self.val_init_op = iter.make_initializer(self.batch_val_data)
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -224,5 +215,5 @@ if __name__ == '__main__':
     model = Network(dataset, cfg)
 
     tester = ModelTester(model, dataset, run, restore_snap=snap)
-    tester.test(model, dataset, run)
+    tester.test(model, dataset, run, path_cls)
 

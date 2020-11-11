@@ -44,7 +44,7 @@ class ModelTester:
         self.test_probs = [np.zeros(shape=[l.shape[0], model.config.num_classes], dtype=np.float32)     # TODO QUE AHCE AQUI? SE PUEDE QUITAR? RELACIONADO CON INPUT LABELS DE TEST_S3DIS.PY
                            for l in dataset.input_labels['validation']]                         
 
-    def test(self, model, dataset, run, num_votes=100):
+    def test(self, model, dataset, run, path_cls, num_votes=100):
 
         # Smoothing parameter for votes
         test_smooth = 0.95
@@ -136,7 +136,7 @@ class ModelTester:
 
                         for i_val in range(num_val):
                             # Reproject probs back to the evaluations points
-                            proj_idx = dataset.val_proj[i_val]                                                   # TODO SE PUEDE QUITAR LA PARTE DE ARRIBE Y SACAR LAS PRED DIRECTAMENTE ASI
+                            proj_idx = dataset.val_proj[i_val]                                                   # TODO SE PUEDE QUITAR LA PARTE DE eval Y SACAR LAS PRED DIRECTAMENTE ASI
                             probs = self.test_probs[i_val][proj_idx, :]
                             proj_probs_list += [probs]
 
@@ -153,8 +153,12 @@ class ModelTester:
                             log_out(dataset.input_names['validation'][i_test] + ' Acc:' + str(acc), self.Log_file)
 
                             confusion_list += [confusion_matrix(labels, preds, dataset.label_values)]
-                            name = dataset.input_names['validation'][i_test] + '.ply'                               # TODO ASI COMO AQUI COGE EL NOMBRE, COGER DATOS O ABRIR ORIGINAL CON ESTE NOMBRE A LO BURRO
-                            write_ply(join(test_path, name), [preds, labels], ['pred', 'label'])      # TODO ARREGLAR WRIITE, VER QUE SE MANDA
+                            name = dataset.input_names['validation'][i_test] + '.ply'             
+                            xyz = dataset.input_full_xyz['validation'][i_test]
+                            pred_colors = DP.labels2colors(preds, path_cls)
+                            write_ply(join(test_path, name), (xyz, pred_colors), ['x', 'y', 'z', 'red', 'green', 'blue'])
+
+
 
                         # Regroup confusions
                         C = np.sum(np.stack(confusion_list), axis=0)

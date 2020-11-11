@@ -11,7 +11,6 @@ import time, pickle, argparse, glob, os
 
 class DATA:
     def __init__(self, data_path):
-        self.name = 'S3DIS'                                          # TODO CAMBIAR 
         self.path = data_path
 
         self.original = os.path.join(self.path, "original")

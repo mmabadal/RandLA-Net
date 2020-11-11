@@ -58,6 +58,15 @@ class DataProcessing:
 
 
     @staticmethod
+    def labels2colors(labels, cls_path):
+        classes, _ , class2labels, label2color, label2names = DataProcessing.get_info_classes(cls_path)
+        colors = np.zeros((labels.shape[0], 3), dtype=np.uint8)
+        for i in range(labels.shape[0]):
+            colors[i,:] = np.array(label2color[labels[i]])
+        return colors
+
+
+    @staticmethod
     def knn_search(support_pts, query_pts, k):
         """
         :param support_pts: points you have, B*N1*3
