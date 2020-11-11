@@ -1,25 +1,21 @@
 from os.path import join
 from RandLANet import Network
-from tester_S3DIS import ModelTester
+from tester import ModelTester
 from helper_ply import read_ply
-from helper_tool import ConfigS3DIS as cfg
+from helper_tool import Config as cfg
 from helper_tool import DataProcessing as DP
-from helper_tool import Plot
 import tensorflow as tf
 import numpy as np
 import time, pickle, argparse, glob, os
 
 
 class DATA:
-    def __init__(self, data_path, path_cls):
+    def __init__(self, data_path):
         self.name = 'S3DIS'                                          # TODO CAMBIAR 
         self.path = data_path
 
         self.original = os.path.join(self.path, "original")
         self.sub_folder = os.path.join(self.path, "sub")
-
-        classes, label_values, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
-        self.label_values = np.array(label_values)              # TODO CONVERTIR AQUI O EN GET_INFO_CLASSES??
 
         self.ignored_classes = []       # TODO PONER IGNORED LABELS EN FUNCION DE ESTO
         self.ignored_labels = np.array([])
@@ -37,7 +33,7 @@ class DATA:
 
     def load_sub_sampled_clouds(self, sub_grid_size):
         
-        for split in ('training','validation'):   # TODO CARGAR SOLO VALS???  JUNTAR ESTO CON TRAIN ?? TENER UNO A PARTE PARA EL REL-TIME??
+        for split in ('training','validation'):
             for cloud in os.listdir(os.path.join(self.original, split)):  
                  
                 cloud_name = cloud[:-4]
@@ -141,7 +137,7 @@ class DATA:
                            queried_pc_colors.astype(np.float32),
                            queried_pc_labels,
                            queried_idx.astype(np.int32),
-                           np.array([cloud_idx], dtype=np.int32))
+                           np.array([cloud_idx], dtype=np.int32))# TODO QUE SON ESTOS DICCIONARIOS? IDX DE TRAIN Y VAL? SE PUEDE QUITAR AHORA QUE ESTA POR CARPETAS? O SE USA SOBRE SUB SIN SPLIT
 
         gen_func = spatially_regular_gen
         gen_types = (tf.float32, tf.float32, tf.int32, tf.int32, tf.int32)
@@ -204,9 +200,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=int, default=0, help='the number of GPUs to use [default: 0]')
     parser.add_argument('--data_path', type=str, help='path to data')
-    parser.add_argument('--path_cls', type=str, help='path to classes')
-    parser.add_argument('--run', type=str, default='None', help='run folder path')
-    parser.add_argument('--snap', type=str, default='None', help='snapshot number')
+    parser.add_argument('--model_path', type=str, default='None', help='pretrained model path')
     FLAGS = parser.parse_args()
 
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -214,17 +208,10 @@ if __name__ == '__main__':
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
     data_path = FLAGS.data_path
-    path_cls = FLAGS.path_cls
-    dataset = DATA(data_path, path_cls)
+    dataset = DATA(data_path)
     dataset.init_input_pipeline()
-
-    cfg.saving = False
-    run = FLAGS.run
-    snap = FLAGS.snap
-    cfg.train_dir = run
+    cfg.train_dir = time.strftime('RUNS/%Y-%m-%d_%H-%M-%S', time.gmtime())
 
     model = Network(dataset, cfg)
-
-    tester = ModelTester(model, dataset, run, restore_snap=snap)
-    tester.test(model, dataset, run)
+    model.train(dataset)
 
