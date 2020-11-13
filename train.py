@@ -20,7 +20,7 @@ class DATA:
         self.label_values = np.array(label_values)
 
         self.ignored_classes = []       # TODO TEST
-        self.ignored_labels = np.array([class2labels[cls] for i, cls in enumerate(ignored_classes)])
+        self.ignored_labels = np.array([class2labels[cls] for i, cls in enumerate(self.ignored_classes)])
 
         # Initiate containers
         self.val_proj = []
