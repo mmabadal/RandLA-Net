@@ -66,7 +66,7 @@ def convert_pc2ply(case, split):
         data_list.append(np.concatenate([pc, labels], 1))  # Nx7
 
     pc_label = np.concatenate(data_list, 0)
-    xyz_min = np.amin(pc_label, axis=0)[0:3]
+    xyz_min = np.amin(pc_label, axis=0)[0:3]  # TODO si esto no se hace y se lee de ply, no hace falta guardar carpeta original
     pc_label[:, 0:3] -= xyz_min
 
     xyz = pc_label[:, :3].astype(np.float32)

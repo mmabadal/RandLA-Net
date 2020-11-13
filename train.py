@@ -16,8 +16,11 @@ class DATA:
         self.original = os.path.join(self.path, "original")
         self.sub_folder = os.path.join(self.path, "sub")
 
-        self.ignored_classes = []       # TODO PONER IGNORED LABELS EN FUNCION DE ESTO
-        self.ignored_labels = np.array([])
+        classes, label_values, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
+        self.label_values = np.array(label_values)
+
+        self.ignored_classes = []       # TODO TEST
+        self.ignored_labels = np.array([class2labels[cls] for i, cls in enumerate(ignored_classes)])
 
         # Initiate containers
         self.val_proj = []
@@ -53,7 +56,7 @@ class DATA:
                 self.input_trees[cloud_split] += [search_tree]
                 self.input_colors[cloud_split] += [sub_colors]
                 self.input_labels[cloud_split] += [sub_labels]
-                self.input_names[cloud_split] += [cloud_name]       # TODO QUE SON ESTOS DICCIONARIOS? IDX DE TRAIN Y VAL? SE PUEDE QUITAR AHORA QUE ESTA POR CARPETAS? O SE USA SOBRE SUB SIN SPLIT
+                self.input_names[cloud_split] += [cloud_name]
 
                 size = sub_colors.shape[0] * 4 * 7
 
@@ -136,7 +139,7 @@ class DATA:
                            queried_pc_colors.astype(np.float32),
                            queried_pc_labels,
                            queried_idx.astype(np.int32),
-                           np.array([cloud_idx], dtype=np.int32))# TODO QUE SON ESTOS DICCIONARIOS? IDX DE TRAIN Y VAL? SE PUEDE QUITAR AHORA QUE ESTA POR CARPETAS? O SE USA SOBRE SUB SIN SPLIT
+                           np.array([cloud_idx], dtype=np.int32))
 
         gen_func = spatially_regular_gen
         gen_types = (tf.float32, tf.float32, tf.int32, tf.int32, tf.int32)
@@ -173,7 +176,7 @@ class DATA:
 
     def init_input_pipeline(self):
         print('Initiating input pipelines')
-        cfg.ignored_label_inds = [self.labels[ign_label] for ign_label in self.ignored_labels]
+        cfg.ignored_label_inds = [ign_label for ign_label in self.ignored_labels]
         gen_function, gen_types, gen_shapes = self.get_batch_gen('training')
         gen_function_val, _, _ = self.get_batch_gen('validation')
         self.train_data = tf.data.Dataset.from_generator(gen_function, gen_types, gen_shapes)

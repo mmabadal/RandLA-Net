@@ -72,7 +72,7 @@ class ModelTester:
             try:
                 ops = (self.prob_logits,
                        model.labels,
-                       model.inputs['input_inds'],              # TODO EXISTE UN MODEL.INPUTS['XYZ'] PRINTEAR SHAPE Y CONTENIDO DE ESTO
+                       model.inputs['input_inds'],
                        model.inputs['cloud_inds'],
                        )
 
@@ -136,7 +136,7 @@ class ModelTester:
 
                         for i_val in range(num_val):
                             # Reproject probs back to the evaluations points
-                            proj_idx = dataset.val_proj[i_val]                                                   # TODO SE PUEDE QUITAR LA PARTE DE eval Y SACAR LAS PRED DIRECTAMENTE ASI
+                            proj_idx = dataset.val_proj[i_val]               # TODO SE PUEDE QUITAR LA PARTE DE eval Y SACAR LAS PRED DIRECTAMENTE ASI
                             probs = self.test_probs[i_val][proj_idx, :]
                             proj_probs_list += [probs]
 

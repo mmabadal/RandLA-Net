@@ -19,8 +19,8 @@ class DATA:
         classes, label_values, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
         self.label_values = np.array(label_values)
 
-        self.ignored_classes = []       # TODO PONER IGNORED LABELS EN FUNCION DE ESTO
-        self.ignored_labels = np.array([])
+        self.ignored_classes = []       # TODO TEST
+        self.ignored_labels = np.array([class2labels[cls] for i, cls in enumerate(ignored_classes)])
 
         # Initiate containers
         self.val_proj = []
@@ -173,7 +173,7 @@ class DATA:
 
     def init_input_pipeline(self):
         print('Initiating input pipelines')
-        cfg.ignored_label_inds = [self.labels[ign_label] for ign_label in self.ignored_labels]
+        cfg.ignored_label_inds = [ign_label for ign_label in self.ignored_labels]
         gen_function_val, gen_types, gen_shapes = self.get_batch_gen('validation')
         self.val_data = tf.data.Dataset.from_generator(gen_function_val, gen_types, gen_shapes)
 
