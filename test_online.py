@@ -4,6 +4,8 @@ from tester import ModelTester
 from helper_ply import read_ply
 from helper_tool import Config as cfg
 from helper_tool import DataProcessing as DP
+from natsort import natsorted
+from sklearn.neighbors import KDTree
 import tensorflow as tf
 import numpy as np
 import time, pickle, argparse, glob, os
@@ -12,9 +14,6 @@ import time, pickle, argparse, glob, os
 class DATA:
     def __init__(self, data_path, path_cls):
         self.path = data_path
-
-        self.original = os.path.join(self.path, "original")
-        self.sub_folder = os.path.join(self.path, "sub")
 
         classes, label_values, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
         self.label_values = np.array(label_values)
@@ -35,42 +34,35 @@ class DATA:
         self.load_sub_sampled_clouds(cfg.sub_grid_size)
 
     def load_sub_sampled_clouds(self, sub_grid_size):
-        
-        for cloud in os.listdir(os.path.join(self.original, 'validation')):  
-                
+
+        for cloud in natsorted(os.listdir(self.path)):
+
             cloud_name = cloud[:-4]
 
-            # Name of the input files
-            kd_tree_file = join(self.sub_folder, '{:s}_KDTree.pkl'.format(cloud_name))
-            
-            sub_ply_file = join(self.sub_folder, '{:s}.ply'.format(cloud_name))
-            sub_data = read_ply(sub_ply_file)
-            sub_colors = np.vstack((sub_data['red'], sub_data['green'], sub_data['blue'])).T
-            sub_labels = sub_data['class']
-
-            full_ply_file = join(self.original, 'validation', '{:s}.ply'.format(cloud_name))
+            full_ply_file = join(self.path, '{:s}.ply'.format(cloud_name))
             full_data = read_ply(full_ply_file)
             full_xyz = np.vstack((full_data['x'], full_data['y'], full_data['z'])).T
+            full_colors = np.vstack((full_data['red'], full_data['green'], full_data['blue'])).T
+            full_labels = full_data['class']
 
+            xyz_min = np.amin(full_xyz, axis=0)[0:3]  # TODO probar sin esto, se ha de haber entrenado sin (data prepare)
+            full_xyz -= xyz_min
 
+            sub_xyz, sub_colors, sub_labels = DP.grid_sub_sampling(full_xyz, full_colors, full_labels, sub_grid_size)
+            sub_colors = sub_colors / 255.0
 
-            # Read pkl with search tree
-            with open(kd_tree_file, 'rb') as f:
-                search_tree = pickle.load(f)
+            search_tree = KDTree(sub_xyz)
 
+            proj_idx = np.squeeze(search_tree.query(full_xyz, return_distance=False))
+            proj_idx = proj_idx.astype(np.int32)
+            
             self.input_trees['validation'] += [search_tree]
             self.input_colors['validation'] += [sub_colors]
             self.input_labels['validation'] += [sub_labels]
             self.input_names['validation'] += [cloud_name]       
             self.input_full_xyz['validation'] += [full_xyz]    
-
-            
-            # Validation projection indices for testing and labels
-            proj_file = join(self.sub_folder, '{:s}_proj.pkl'.format(cloud_name))
-            with open(proj_file, 'rb') as f:
-                proj_idx, labels = pickle.load(f)
             self.val_proj += [proj_idx]
-            self.val_labels += [labels]
+            self.val_labels += [full_labels]
 
     # Generate the input data flow
     def get_batch_gen(self, split):
