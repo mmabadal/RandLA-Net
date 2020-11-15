@@ -37,6 +37,7 @@ class DATA:
 
         for cloud in natsorted(os.listdir(self.path)):
 
+            print(cloud)
             cloud_name = cloud[:-4]
 
             full_ply_file = join(self.path, '{:s}.ply'.format(cloud_name))
@@ -50,6 +51,7 @@ class DATA:
 
             sub_xyz, sub_colors, sub_labels = DP.grid_sub_sampling(full_xyz, full_colors, full_labels, sub_grid_size)
             sub_colors = sub_colors / 255.0
+            sub_labels = sub_labels.reshape((sub_labels.shape[0],))
 
             search_tree = KDTree(sub_xyz)
 

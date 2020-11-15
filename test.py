@@ -38,6 +38,7 @@ class DATA:
         
         for cloud in os.listdir(os.path.join(self.original, 'validation')):  
                 
+            print(cloud)
             cloud_name = cloud[:-4]
 
             # Name of the input files
