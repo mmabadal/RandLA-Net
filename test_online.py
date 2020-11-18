@@ -46,7 +46,7 @@ class DATA:
             full_colors = np.vstack((full_data['red'], full_data['green'], full_data['blue'])).T
             full_labels = full_data['class']
 
-            xyz_min = np.amin(full_xyz, axis=0)[0:3]  # TODO probar sin esto, se ha de haber entrenado sin (data prepare)
+            xyz_min = np.amin(full_xyz, axis=0)[0:3]
             full_xyz -= xyz_min
 
             sub_xyz, sub_colors, sub_labels = DP.grid_sub_sampling(full_xyz, full_colors, full_labels, sub_grid_size)
