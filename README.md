@@ -42,33 +42,43 @@ CONDA -> python:3.5
 TENSORFLOW: pip installation inside CONDA (pip install tensorflow-gpu==1.11)
 ```
 
-Data path changed in data_prepare_s3dis.py and main_S3DIS.py
-
 Reduced GPU memory usage: batch_size=3, numpoints=xxxx
 
-Labels in output correspond to .ply in data/S3DIS/Stanford3dDataset_v1.2_Aligned_Version/original_ply
 
+### (3) Data structure
 
-### (3) Segmentation
-S3DIS dataset can be found 
-<a href="https://docs.google.com/forms/d/e/1FAIpQLScDimvNMCGhy_rmBA2gHfDu3naktRm6A8BPwAWWDv-Uhm6Shw/viewform?c=0&w=1">here</a>. 
-Download the files named "Stanford3dDataset_v1.2_Aligned_Version.zip". Uncompress the folder and move it to 
-`/data/S3DIS`.
+ data
+
+   -classes.txt
+
+   -txt
+     -training
+       -case_x
+         -case_x.txt
+	 -annotations
+	   -class_x.txt
+	   -class_y.txt
+	   -...
+       -...
+
+     -validation
+       -...
+
+### (4) Segmentation
 
 - Preparing the dataset:
 ```
-python utils/data_prepare_s3dis.py
+python utils/data_prepare.py --path_in Desktop/data/txt/ --path_out Desktop/data/ --path_cls Desktop/data/classes.txt
 ```
 - Train:
 ```
-python -B main_S3DIS.py --gpu 0 --mode train --test_area 1
+python train.py --gpu 0 --data_path Desktop/data/ --path_cls Desktop/data/classes.txt
 ```
 - Test:
 ```
-python -B main_S3DIS.py --gpu 0 --mode test --test_area 1
+python test.py --gpu 0 --data_path Desktop/data/  --path_cls Desktop/data/classes.txt --run RUNS/test/ --snap 25501
+
 ```
-
-
 
 ### Citation
 If you find our work useful in your research, please consider citing:
