@@ -49,16 +49,22 @@ Reduced GPU memory usage: batch_size=3, numpoints=xxxx
 
 ```
  data
+ 
    -classes.txt
+   
    -txt
+   
      -training
+     
        -case_x
          -case_x.txt
 	 -annotations
 	   -class_x.txt
 	   -class_y.txt
 	   -...
+	   
        -...
+       
      -validation
        -...
  ```
