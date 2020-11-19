@@ -47,10 +47,9 @@ Reduced GPU memory usage: batch_size=3, numpoints=xxxx
 
 ### (3) Data structure
 
+```
  data
-
    -classes.txt
-
    -txt
      -training
        -case_x
@@ -60,9 +59,9 @@ Reduced GPU memory usage: batch_size=3, numpoints=xxxx
 	   -class_y.txt
 	   -...
        -...
-
      -validation
        -...
+ ```
 
 ### (4) Segmentation
 
