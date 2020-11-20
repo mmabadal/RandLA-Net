@@ -23,6 +23,9 @@ This code has been tested with Python 3.5, Tensorflow 1.11, CUDA 9.0 and cuDNN 7
 git clone --depth=1 https://github.com/QingyongHu/RandLA-Net && cd RandLA-Net
 ```
 - Setup python environment
+
+https://www.anaconda.com/products/individual
+https://docs.anaconda.com/anaconda/install/linux/
 ```
 conda create -n randlanet python=3.5
 source activate randlanet
