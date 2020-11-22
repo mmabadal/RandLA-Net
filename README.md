@@ -22,7 +22,7 @@ INSTALL FROM: https://medium.com/repro-repo/install-cuda-and-cudnn-for-tensorflo
  
 - Clone the repository 
 ```
-git clone https://github.com/QingyongHu/RandLA-Net && cd RandLA-Net
+git clone https://github.com/mmabadal/RandLA-Net
 ```
 - Setup python environment
 
