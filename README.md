@@ -17,18 +17,34 @@ This is the official implementation of **RandLA-Net** (CVPR2020, Oral presentati
 	
 ### (1) Setup
 This code has been tested with Python 3.5, Tensorflow 1.11, CUDA 9.0 and cuDNN 7.4.1 on Ubuntu 16.04.
+
+INSTALL FROM: https://medium.com/repro-repo/install-cuda-and-cudnn-for-tensorflow-gpu-on-ubuntu-79306e4ac04e
  
 - Clone the repository 
 ```
-git clone --depth=1 https://github.com/QingyongHu/RandLA-Net && cd RandLA-Net
+git clone https://github.com/QingyongHu/RandLA-Net && cd RandLA-Net
 ```
 - Setup python environment
 
-https://www.anaconda.com/products/individual
-https://docs.anaconda.com/anaconda/install/linux/
+---- ANACONDA ---- 
+
+download anaconda (end of page): https://www.anaconda.com/products/individual#linux
+
+install conda dependencies and anaconda (https://docs.anaconda.com/anaconda/install/linux/)
+
+$ sudo apt-get install libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
+$ bash ~/Downloads/Anaconda3-2020.02-Linux-x86_64.sh
+
+you can deactivate the auto base environment on new shell
+$ conda config --set auto_activate_base false
+
+create conda env
+
+conda create --name randlanet python=3.5 
+
+conda activate randlanet
+
 ```
-conda create -n randlanet python=3.5
-source activate randlanet
 pip install -r helper_requirements.txt
 pip install tensorflow-gpu==1.11
 sh compile_op.sh
