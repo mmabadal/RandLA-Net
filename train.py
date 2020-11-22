@@ -203,7 +203,6 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', type=int, default=0, help='the number of GPUs to use [default: 0]')
     parser.add_argument('--data_path', type=str, help='path to data')
     parser.add_argument('--path_cls', type=str, help='path to classes')
-    parser.add_argument('--model_path', type=str, default='None', help='pretrained model path')
     FLAGS = parser.parse_args()
 
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
