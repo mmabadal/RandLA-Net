@@ -13,6 +13,7 @@ sys.path.append(BASE_DIR)
 sys.path.append(ROOT_DIR)
 from helper_ply import write_ply
 from helper_tool import DataProcessing as DP
+from helper_tool import Config as cfg
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--path_in', help='path to the txt data folder.')
@@ -43,7 +44,7 @@ if not os.path.exists(path_out_sub):
 
 classes, label_values, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
 
-sub_grid_size = 0.04
+sub_grid_size = cfg.sub_grid_size
 
 def convert_pc2ply(case, split):
     """
