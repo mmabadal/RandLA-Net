@@ -27,8 +27,9 @@ path_out = parsed_args.path_out
 path_cls = parsed_args.path_cls
 
 path_orig = os.path.join(path_out,"original")
-path_orig_train = os.path.join(path_orig,"training")
-path_orig_val = os.path.join(path_orig,"validation")
+path_orig_train = os.path.join(path_orig,"test")
+path_orig_train = os.path.join(path_orig,"train")
+path_orig_val = os.path.join(path_orig,"val")
 path_out_sub = os.path.join(path_out,"sub")
 
 if not os.path.exists(path_out):
@@ -55,7 +56,7 @@ def convert_pc2ply(case, split):
     """
     data_list = []
 
-    anno_path = os.path.join(path_in, split, case, "Annotations")
+    anno_path = os.path.join(path_in, split, case, "annotations")
 
     for f in glob.glob(join(anno_path, '*.txt')):
         class_name = os.path.basename(f).split('_')[0]
@@ -96,7 +97,7 @@ def convert_pc2ply(case, split):
 
 if __name__ == '__main__':
 
-    for split in ("training", "validation"):
+    for split in ("test", "train", "val"):
         for folder in natsorted(os.listdir(os.path.join(path_in, split))):
             print("working on case: " + str(folder))
             convert_pc2ply(folder, split)
