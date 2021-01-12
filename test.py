@@ -10,8 +10,10 @@ import time, pickle, argparse, glob, os
 
 
 class DATA:
-    def __init__(self, data_path, path_cls):
+    def __init__(self, data_path, path_cls, test_name):
+
         self.path = data_path
+        self.test_name = test_name
 
         self.original = os.path.join(self.path, "original")
         self.sub_folder = os.path.join(self.path, "sub")
@@ -27,16 +29,16 @@ class DATA:
         self.val_labels = []
         self.possibility = {}
         self.min_possibility = {}
-        self.input_trees = {'validation': []}
-        self.input_colors = {'validation': []}
-        self.input_labels = {'validation': []}
-        self.input_names = {'validation': []}
-        self.input_full_xyz = {'validation': []}
+        self.input_trees = {'test': []}
+        self.input_colors = {'test': []}
+        self.input_labels = {'test': []}
+        self.input_names = {'test': []}
+        self.input_full_xyz = {'test': []}
         self.load_sub_sampled_clouds(cfg.sub_grid_size)
 
     def load_sub_sampled_clouds(self, sub_grid_size):
         
-        for cloud in os.listdir(os.path.join(self.original, 'validation')):  
+        for cloud in os.listdir(os.path.join(self.original, 'test', self.test_name)):  
                 
             print(cloud)
             cloud_name = cloud[:-4]
@@ -49,7 +51,7 @@ class DATA:
             sub_colors = np.vstack((sub_data['red'], sub_data['green'], sub_data['blue'])).T
             sub_labels = sub_data['class']
 
-            full_ply_file = join(self.original, 'validation', '{:s}.ply'.format(cloud_name))
+            full_ply_file = join(self.original, 'test', self.test_name, '{:s}.ply'.format(cloud_name))
             full_data = read_ply(full_ply_file)
             full_xyz = np.vstack((full_data['x'], full_data['y'], full_data['z'])).T
 
@@ -59,14 +61,14 @@ class DATA:
             with open(kd_tree_file, 'rb') as f:
                 search_tree = pickle.load(f)
 
-            self.input_trees['validation'] += [search_tree]
-            self.input_colors['validation'] += [sub_colors]
-            self.input_labels['validation'] += [sub_labels]
-            self.input_names['validation'] += [cloud_name]       
-            self.input_full_xyz['validation'] += [full_xyz]    
+            self.input_trees['test'] += [search_tree]
+            self.input_colors['test'] += [sub_colors]
+            self.input_labels['test'] += [sub_labels]
+            self.input_names['test'] += [cloud_name]       
+            self.input_full_xyz['test'] += [full_xyz]    
 
             
-            # Validation projection indices for testing and labels
+            # Test projection indices for testing and labels
             proj_file = join(self.sub_folder, '{:s}_proj.pkl'.format(cloud_name))
             with open(proj_file, 'rb') as f:
                 proj_idx, labels = pickle.load(f)
@@ -175,7 +177,7 @@ class DATA:
     def init_input_pipeline(self):
         print('Initiating input pipelines')
         cfg.ignored_label_inds = [ign_label for ign_label in self.ignored_labels]
-        gen_function_val, gen_types, gen_shapes = self.get_batch_gen('validation')
+        gen_function_val, gen_types, gen_shapes = self.get_batch_gen('test')
         self.val_data = tf.data.Dataset.from_generator(gen_function_val, gen_types, gen_shapes)
 
         self.batch_val_data = self.val_data.batch(cfg.val_batch_size)
@@ -194,6 +196,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=int, default=0, help='the number of GPUs to use [default: 0]')
     parser.add_argument('--data_path', type=str, help='path to data')
+    parser.add_argument('--test_name', type=str, help='path to data')
     parser.add_argument('--path_cls', type=str, help='path to classes')
     parser.add_argument('--run', type=str, default='None', help='run folder path')
     parser.add_argument('--snap', type=str, default='None', help='snapshot number')
@@ -203,9 +206,10 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = str(FLAGS.gpu)
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+    test_name = FLAGS.test_name
     data_path = FLAGS.data_path
     path_cls = FLAGS.path_cls
-    dataset = DATA(data_path, path_cls)
+    dataset = DATA(data_path, path_cls, test_name)
     dataset.init_input_pipeline()
 
     cfg.saving = False

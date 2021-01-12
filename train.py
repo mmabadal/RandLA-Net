@@ -27,15 +27,15 @@ class DATA:
         self.val_labels = []
         self.possibility = {}
         self.min_possibility = {}
-        self.input_trees = {'training': [], 'validation': []}
-        self.input_colors = {'training': [], 'validation': []}
-        self.input_labels = {'training': [], 'validation': []}
-        self.input_names = {'training': [], 'validation': []}
+        self.input_trees = {'train': [], 'val': []}
+        self.input_colors = {'train': [], 'val': []}
+        self.input_labels = {'train': [], 'val': []}
+        self.input_names = {'train': [], 'val': []}
         self.load_sub_sampled_clouds(cfg.sub_grid_size)
 
     def load_sub_sampled_clouds(self, sub_grid_size):
         
-        for split in ('training','validation'):
+        for split in ('train','val'):
             for cloud in os.listdir(os.path.join(self.original, split)):  
                  
                 cloud_name = cloud[:-4]
@@ -63,7 +63,7 @@ class DATA:
         print('\nPreparing reprojected indices for testing')
 
         # Get validation and test reprojected indices
-        for cloud in os.listdir(os.path.join(self.original, "validation")): 
+        for cloud in os.listdir(os.path.join(self.original, "val")): 
             cloud_name = cloud[:-4]
 
             # Validation projection and labels
@@ -75,9 +75,9 @@ class DATA:
 
     # Generate the input data flow
     def get_batch_gen(self, split):
-        if split == 'training':
+        if split == 'train':
             num_per_epoch = cfg.train_steps * cfg.batch_size
-        elif split == 'validation':
+        elif split == 'val':
             num_per_epoch = cfg.val_steps * cfg.val_batch_size
 
         self.possibility[split] = []
@@ -177,8 +177,8 @@ class DATA:
     def init_input_pipeline(self):
         print('Initiating input pipelines')
         cfg.ignored_label_inds = [ign_label for ign_label in self.ignored_labels]
-        gen_function, gen_types, gen_shapes = self.get_batch_gen('training')
-        gen_function_val, _, _ = self.get_batch_gen('validation')
+        gen_function, gen_types, gen_shapes = self.get_batch_gen('train')
+        gen_function_val, _, _ = self.get_batch_gen('val')
         self.train_data = tf.data.Dataset.from_generator(gen_function, gen_types, gen_shapes)
         self.val_data = tf.data.Dataset.from_generator(gen_function_val, gen_types, gen_shapes)
 

@@ -18,9 +18,6 @@ class DATA:
         classes, label_values, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
         self.label_values = np.array(label_values)
 
-        self.ignored_classes = []       # TODO TEST
-        self.ignored_labels = np.array([class2labels[cls] for i, cls in enumerate(self.ignored_classes)])
-
         # Initiate containers
         self.val_proj = []
         self.val_labels = []
@@ -31,13 +28,11 @@ class DATA:
         self.input_labels = {'validation': []}
         self.input_names = {'validation': []}
         self.input_full_xyz = {'validation': []}
-        self.load_sub_sampled_clouds(cfg.sub_grid_size)
 
     def load_sub_sampled_clouds(self, sub_grid_size):
 
         for cloud in natsorted(os.listdir(self.path)):
 
-            print(cloud)
             cloud_name = cloud[:-4]
 
             full_ply_file = join(self.path, '{:s}.ply'.format(cloud_name))
@@ -46,12 +41,11 @@ class DATA:
             full_colors = np.vstack((full_data['red'], full_data['green'], full_data['blue'])).T
             full_labels = full_data['class']
 
-            xyz_min = np.amin(full_xyz, axis=0)[0:3]
+            xyz_min = np.amin(full_xyz, axis=0)[0:3]  # TODO probar sin esto, se ha de haber entrenado sin (data prepare)
             full_xyz -= xyz_min
 
             sub_xyz, sub_colors, sub_labels = DP.grid_sub_sampling(full_xyz, full_colors, full_labels, sub_grid_size)
             sub_colors = sub_colors / 255.0
-            sub_labels = sub_labels.reshape((sub_labels.shape[0],))
 
             search_tree = KDTree(sub_xyz)
 
@@ -166,21 +160,20 @@ class DATA:
         return tf_map
 
     def init_input_pipeline(self):
+
         print('Initiating input pipelines')
-        cfg.ignored_label_inds = [ign_label for ign_label in self.ignored_labels]
+        self.load_sub_sampled_clouds(cfg.sub_grid_size)
+
         gen_function_val, gen_types, gen_shapes = self.get_batch_gen('validation')
         self.val_data = tf.data.Dataset.from_generator(gen_function_val, gen_types, gen_shapes)
 
         self.batch_val_data = self.val_data.batch(cfg.val_batch_size)
         map_func = self.get_tf_mapping2()
-
         self.batch_val_data = self.batch_val_data.map(map_func=map_func)
-
         self.batch_val_data = self.batch_val_data.prefetch(cfg.val_batch_size)
 
         iter = tf.data.Iterator.from_structure(self.batch_val_data.output_types, self.batch_val_data.output_shapes)
         self.flat_inputs = iter.get_next()
-        
         self.val_init_op = iter.make_initializer(self.batch_val_data)
 
 if __name__ == '__main__':
