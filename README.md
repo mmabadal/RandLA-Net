@@ -74,18 +74,31 @@ Reduced GPU memory usage: batch_size=3, numpoints=xxxx
    -txt
    
      -training
-     
        -case_x
          -case_x.txt
-	 -annotations
-	   -class_x.txt
-	   -class_y.txt
+		-annotations
+			-class_x.txt
+			-class_y.txt
 	   -...
-	   
-       -...
        
      -validation
-       -...
+       -case_x
+         -case_x.txt
+		-annotations
+			-class_x.txt
+			-class_y.txt
+	   -...
+
+	 -test
+	   -test1
+		-case_x
+			-case_x.txt
+			-annotations
+				-class_x.txt
+				-class_y.txt
+		-...
+	   -test2
+	   	-...
  ```
 
 ### (4) Segmentation

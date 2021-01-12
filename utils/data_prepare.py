@@ -27,9 +27,6 @@ path_out = parsed_args.path_out
 path_cls = parsed_args.path_cls
 
 path_orig = os.path.join(path_out,"original")
-path_orig_train = os.path.join(path_orig,"test")
-path_orig_train = os.path.join(path_orig,"train")
-path_orig_val = os.path.join(path_orig,"val")
 path_out_sub = os.path.join(path_out,"sub")
 
 if not os.path.exists(path_out):
@@ -37,8 +34,6 @@ if not os.path.exists(path_out):
 
 if not os.path.exists(path_orig):
     os.mkdir(path_orig)
-    os.mkdir(path_orig_train)
-    os.mkdir(path_orig_val)
 
 if not os.path.exists(path_out_sub):
     os.mkdir(path_out_sub)
@@ -54,6 +49,7 @@ def convert_pc2ply(case, split):
     :param case: case. e.g. office_2
     :return: None
     """
+
     data_list = []
 
     anno_path = os.path.join(path_in, split, case, "annotations")
@@ -98,6 +94,24 @@ def convert_pc2ply(case, split):
 if __name__ == '__main__':
 
     for split in ("test", "train", "val"):
-        for folder in natsorted(os.listdir(os.path.join(path_in, split))):
-            print("working on case: " + str(folder))
-            convert_pc2ply(folder, split)
+
+        path_orig_split = os.path.join(path_orig,split)
+        if not os.path.exists(path_orig_split):
+            os.mkdir(path_orig_split)
+
+        if split == "test":
+            for folder in natsorted(os.listdir(os.path.join(path_in, split))):
+
+                path_orig_tests = os.path.join(path_orig,split,folder)
+                if not os.path.exists(path_orig_tests):
+                    os.mkdir(path_orig_tests)
+
+                split_test = os.path.join(split,folder)
+                for folder2 in natsorted(os.listdir(os.path.join(path_in, split_test))):
+                    print("working on case: " + str(folder2))
+                    convert_pc2ply(folder2, split_test)
+
+        else:
+            for folder in natsorted(os.listdir(os.path.join(path_in, split))):
+                print("working on case: " + str(folder))
+                convert_pc2ply(folder, split)
