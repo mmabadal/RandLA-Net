@@ -16,10 +16,10 @@ def log_out(out_str, log_f_out):
 
 
 class ModelTester:
-    def __init__(self, model, dataset, run, restore_snap=None):
+    def __init__(self, model, dataset, run, test_name="", restore_snap=None):
         my_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
         self.saver = tf.train.Saver(my_vars, max_to_keep=100)
-        self.Log_file = open(os.path.join(run,'log_test.txt'), 'a')
+        self.Log_file = open(os.path.join(run,'log_test_' + test_name + '.txt'), 'a')
 
         # Create a session for running Ops on the Graph.
         on_cpu = False
@@ -42,9 +42,9 @@ class ModelTester:
 
         # Initiate global prediction over all test clouds
         self.test_probs = [np.zeros(shape=[l.shape[0], model.config.num_classes], dtype=np.float32)     # TODO QUE AHCE AQUI? SE PUEDE QUITAR? RELACIONADO CON INPUT LABELS DE TEST_S3DIS.PY
-                           for l in dataset.input_labels['validation']]                         
+                           for l in dataset.input_labels['test']]                         
 
-    def test(self, model, dataset, run, path_cls, num_votes=100):
+    def test(self, model, dataset, run, path_cls, test_name="", num_votes=100):
 
         # Smoothing parameter for votes
         test_smooth = 0.95
@@ -61,7 +61,7 @@ class ModelTester:
                 i += 1
 
         # Test saving path
-        test_path = os.path.join(run, 'predictions')
+        test_path = os.path.join(run, 'predictions_' + test_name)
         makedirs(test_path) if not exists(test_path) else None
 
         step_id = 0
@@ -75,7 +75,7 @@ class ModelTester:
                        model.inputs['input_inds'],
                        model.inputs['cloud_inds'],
                        )
-
+                #print("a")
                 stacked_probs, stacked_labels, point_idx, cloud_idx = self.sess.run(ops, {model.is_training: False})  # TODO SACA PROBS, se puede sacar que caso es con cloud idx?
                 correct = np.sum(np.argmax(stacked_probs, axis=1) == stacked_labels)
                 acc = correct / float(np.prod(np.shape(stacked_labels)))
@@ -92,7 +92,7 @@ class ModelTester:
 
             except tf.errors.OutOfRangeError:
 
-                new_min = np.min(dataset.min_possibility['validation'])
+                new_min = np.min(dataset.min_possibility['test'])
                 log_out('Epoch {:3d}, end. Min possibility = {:.1f}'.format(epoch_id, new_min), self.Log_file)
 
                 if last_min + 1 < new_min:
@@ -104,12 +104,13 @@ class ModelTester:
                     log_out('\nConfusion on sub clouds', self.Log_file)
                     confusion_list = []
 
-                    num_val = len(dataset.input_labels['validation'])
+                    num_val = len(dataset.input_labels['test'])
 
                     for i_test in range(num_val):
+                        #print("b")
                         probs = self.test_probs[i_test]                                                         # TODO RECUPERA PROBS
                         preds = dataset.label_values[np.argmax(probs, axis=1)].astype(np.int32)                 # TODO RECUPERA LAS PREDS
-                        labels = dataset.input_labels['validation'][i_test]
+                        labels = dataset.input_labels['test'][i_test]
 
                         # Confs
                         confusion_list += [confusion_matrix(labels, preds, dataset.label_values)]
@@ -135,6 +136,7 @@ class ModelTester:
                         proj_probs_list = []
 
                         for i_val in range(num_val):
+                            #print("c")
                             # Reproject probs back to the evaluations points
                             proj_idx = dataset.val_proj[i_val]               # TODO SE PUEDE QUITAR LA PARTE DE eval Y SACAR LAS PRED DIRECTAMENTE ASI
                             probs = self.test_probs[i_val][proj_idx, :]
@@ -144,17 +146,18 @@ class ModelTester:
                         log_out('Confusion on full clouds', self.Log_file)
                         confusion_list = []
                         for i_test in range(num_val):
+                            #print("d")
                             # Get the predicted labels
                             preds = dataset.label_values[np.argmax(proj_probs_list[i_test], axis=1)].astype(np.uint8)
 
                             # Confusion
                             labels = dataset.val_labels[i_test]
                             acc = np.sum(preds == labels) / len(labels)
-                            log_out(dataset.input_names['validation'][i_test] + ' Acc:' + str(acc), self.Log_file)
+                            log_out(dataset.input_names['test'][i_test] + ' Acc:' + str(acc), self.Log_file)
 
                             confusion_list += [confusion_matrix(labels, preds, dataset.label_values)]
-                            name = dataset.input_names['validation'][i_test] + '.ply'             
-                            xyz = dataset.input_full_xyz['validation'][i_test]
+                            name = dataset.input_names['test'][i_test] + '.ply'             
+                            xyz = dataset.input_full_xyz['test'][i_test]
                             pred_colors = DP.labels2colors(preds, path_cls)
                             write_ply(join(test_path, name), (xyz, pred_colors), ['x', 'y', 'z', 'red', 'green', 'blue'])
 

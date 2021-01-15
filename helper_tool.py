@@ -19,8 +19,8 @@ class Config:
     k_n = 16  # KNN
     num_layers = 5  # Number of layers
     num_points = 40960  # Number of input points
-    num_classes = 13  # Number of valid classes
-    sub_grid_size = 0.04  # preprocess_parameter
+    num_classes = 3  # Number of valid classes
+    sub_grid_size = 0.002  # preprocess_parameter
 
     batch_size = 3  # batch_size during training
     val_batch_size = 3  # batch_size during validation and test
@@ -160,8 +160,7 @@ class DataProcessing:
     def get_class_weights():
         # pre-calculate the number of points in each category
         num_per_class = []
-        num_per_class = np.array([3370714, 2856755, 4919229, 318158, 375640, 478001, 974733,
-                                    650464, 791496, 88727, 1284130, 229758, 2272837], dtype=np.int32)
+        num_per_class = np.array([76,24,1035], dtype=np.int32)
         weight = num_per_class / float(sum(num_per_class))
-        ce_label_weight = 1 / (weight + 0.02)
+        ce_label_weight = 1 / (weight)
         return np.expand_dims(ce_label_weight, axis=0)

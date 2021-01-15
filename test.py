@@ -219,6 +219,6 @@ if __name__ == '__main__':
 
     model = Network(dataset, cfg)
 
-    tester = ModelTester(model, dataset, run, restore_snap=snap)
-    tester.test(model, dataset, run, path_cls)
+    tester = ModelTester(model, dataset, run, test_name, restore_snap=snap)
+    tester.test(model, dataset, run, path_cls, test_name)
 
