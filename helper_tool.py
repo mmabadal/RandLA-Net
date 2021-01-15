@@ -156,6 +156,39 @@ class DataProcessing:
         IoU += mask * mIoU
         return IoU
 
+
+    @staticmethod
+    def metrics_from_confusions(confusions):
+
+        # TODO quiza hace falta pasar de confusions a confusion matrix normal, o si esta en tester.py paserle esa directamente
+
+        acc_global = confusions.diagonal().sum()/confusions.sum()
+        prec_calsses = list()
+        rec_classes = list()
+        acc_classes = list()
+
+        for i in range(confusions.shape[1]): # TODO get nclases from confusions.shape[?]
+            if np.sum(confusions, axis=0)[i] != 0:
+                prec_class = confusions[i,i] / np.sum(confusions, axis=0)[i]
+            else:
+                prec_class = 'nan'
+
+            if np.sum(confusions, axis=1)[i] != 0:
+                rec_class = confusions[i, i] / np.sum(confusions, axis=1)[i]
+            else:
+                rec_class = 'nan'
+
+            if np.sum(confusions, axis=0)[i] != 0 and np.sum(confusions, axis=1)[i] != 0:
+                acc_class = (confusions[i, i] + np.sum(confusions) - np.sum(confusions, axis=0)[i] - np.sum(confusions, axis=1)[i] + confusions[i, i]) / np.sum(confusions)
+            else:
+                acc_class = 'nan'
+
+            prec_calsses.append(prec_class)
+            rec_classes.append(rec_class)
+            acc_classes.append(acc_class)
+
+        return acc_global, prec_calsses, rec_classes, acc_classes
+
     @staticmethod
     def get_class_weights():
         # pre-calculate the number of points in each category

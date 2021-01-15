@@ -166,6 +166,10 @@ class ModelTester:
                         # Regroup confusions
                         C = np.sum(np.stack(confusion_list), axis=0)
 
+                        print(type(C))
+                        print(C.shape)
+                        print(C)
+
                         IoUs = DP.IoU_from_confusions(C)
                         m_IoU = np.mean(IoUs)
                         s = '{:5.2f} | '.format(100 * m_IoU)
@@ -174,6 +178,16 @@ class ModelTester:
                         log_out('-' * len(s), self.Log_file)
                         log_out(s, self.Log_file)
                         log_out('-' * len(s) + '\n', self.Log_file)
+
+                        acc_global, prec_calsses, rec_classes, acc_classes = DP.metrics_from_confusions(C)
+                        for i in range(IoUs):
+                            str_acc = list(labels.keys())[list(labels.values()).index(i)] + ' accuracy: ' + str(acc_classes[i])
+                            str_prec = list(labels.keys())[list(labels.values()).index(i)] + ' precision: ' + str(prec_calsses[i])
+                            str_rec = list(labels.keys())[list(labels.values()).index(i)] + ' recall: ' + str(rec_classes[i])
+                            log_out(str_acc + '\n')
+                            log_out(str_prec + '\n')
+                            log_out(str_rec + '\n\n')
+
                         print('finished \n')
                         self.sess.close()
                         return
