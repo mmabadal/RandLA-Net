@@ -18,6 +18,7 @@ class DATA:
 
         classes, label_values, class2labels, label2color, label2names = DP.get_info_classes(path_cls)
         self.label_values = np.array(label_values)
+        print(classes)
 
         self.ignored_classes = []       # TODO TEST
         self.ignored_labels = np.array([class2labels[cls] for i, cls in enumerate(self.ignored_classes)])
